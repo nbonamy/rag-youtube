@@ -1,0 +1,6 @@
+google-api-python-client
+sentence_transformers
+requests
+langchain
+chromadb
+yt_dlp

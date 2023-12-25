@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<link rel="icon" type="image/ico" href="/img/icon.png">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="https://cdn.materialdesignicons.com/2.5.94/css/materialdesignicons.min.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.5/css/bulma.min.css">
+	<link rel="stylesheet" href="https://unpkg.com/buefy/dist/buefy.min.css">
+	<link rel="stylesheet" href="css/index.css">
+	<script defer src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+	<script defer src="https://cdn.jsdelivr.net/npm/vue-router@3.1.3/dist/vue-router.min.js"></script>
+	<script defer src="https://unpkg.com/buefy/dist/buefy.min.js"></script>
+	<script defer src="https://unpkg.com/axios/dist/axios.min.js"></script>
+	<script defer src="js/index.js"></script>
+	<title>RAG YouTube - Ask me anything!</title>
+</head>
+
+<body>
+	<div id="app">
+		<b-loading :is-full-page="true" :active.sync="isLoading" :can-cancel="false"></b-loading>
+		<header class="hero">
+			<div class="hero-body">
+				<div class="container">
+					<h1 class="title">rag-youtube</h1>
+					<h2 class="subtitle">ask anything to your favorite channel!</h2>
+				</div>
+			</div>
+		</header>
+		<main>
+			<section class="section chat">
+				<section class="header" v-if="channel">
+					<img :src="channel.snippet.thumbnails.default.url" class="thumbnail">
+					<div class="title"><a :href="'https://youtube.com/' + channel.snippet.customUrl" target="_blank">{{ channel.snippet.title }}</a></div>
+				</section>
+				<div class="discussion" ref="discussion">
+					<div class="message" :class="message.role" v-for="message in messages">
+						<div class="avatar"><img :src="message.role == 'user' ? 'img/user.jpg' : channel.snippet.thumbnails.default.url"></div>
+						<div class="header">{{ message.role == 'user' ? 'You' : channel.snippet.title }}</div>
+						<div class="body">{{ message.text }}</div>
+						<div class="sources" v-if="message.sources">
+							Sources:
+							<ul>
+								<li class="source" v-for="source in message.sources">
+									<a :href="source.url" target="_blank">{{ source.title }}</a>
+								</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+				<b-field>
+					<b-input v-model="question" placeholder="Ask any question!"></b-input>
+					<p class="control"><b-button type="is-info" label="Ask" @click="ask"/></p>
+				</b-field>
+				<span v-if="response">{{ performance }}</span>
+			</section>
+		</main>
+	</div>
+
+</body>
+
+</html>
