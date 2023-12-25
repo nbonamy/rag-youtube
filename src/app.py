@@ -23,6 +23,12 @@ def info():
   print('hello')
   return static_file('channel_info.json', root='./')
 
+@app.route('/embed')
+def embed():
+  text = request.query.text
+  embeddings = database.calculate_embeddings(text)
+  return { 'text': text, 'length': len(embeddings), 'embeddings': [float(a) for a in embeddings] }
+
 @app.route('/ask')
 def ask():
 

@@ -12,3 +12,7 @@ def get_video_info(video_id):
       if video['id']['videoId'] == video_id:
         return video
     return None
+
+def dumpj(data, filename):
+  with open(filename, 'w') as f:
+    f.write(json.dumps(data, indent=2))

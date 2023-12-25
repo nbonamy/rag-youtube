@@ -165,6 +165,5 @@ cython_debug/
 # our stuff
 captions/
 db/
-videos.json
-loaded.json
-channel_info.json
+*.json
+*.conf
