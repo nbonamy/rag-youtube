@@ -66,7 +66,7 @@ Then access `http://localhost:5555`.
 
 ## Configuration
 
-You can change some defaults bu creating a `rag-youtube.conf` file in the base folder.
+You can change some defaults by creating a `rag-youtube.conf` file in the base folder.
 
 The following options are available (values below are the default ones)
 
