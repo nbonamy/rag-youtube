@@ -63,3 +63,28 @@ To start over, simply delete the `db` folder and run the script.
 ```
 
 Then access `http://localhost:5555`.
+
+## Configuration
+
+You can change some defaults bu creating a `rag-youtube.conf` file in the base folder.
+
+The following options are available (values below are the default ones)
+
+```
+[General]
+ollama_url=http://localhost:11434
+ollama_modal=mistral:latest
+persist_dir=db
+
+[Embeddings]
+model=all-MiniLM-L6-v2
+
+[Splitter]
+split_chunk_size=1000
+split_chunk_overlap=200
+
+[Search]
+similarity_document_count=4
+```
+
+For the embeddings model, default is to use a [HuggingFace Sentence Transformers models](https://www.sbert.net/docs/pretrained_models.html). You can specify `ollama` to use Ollama embeddings or `openai:xxxx` to use a [OpenAI Embeddings](https://platform.openai.com/docs/guides/embeddings/what-are-embeddings).
