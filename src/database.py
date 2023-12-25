@@ -6,12 +6,24 @@ import config
 import requests
 from langchain.llms import Ollama
 from langchain.vectorstores import Chroma
+from langchain.prompts import PromptTemplate
 from langchain.schema.document import Document
 from langchain.callbacks.base import BaseCallbackHandler
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.embeddings import OpenAIEmbeddings, OllamaEmbeddings, HuggingFaceEmbeddings
 from langchain.chains import RetrievalQA, RetrievalQAWithSourcesChain
 from sentence_transformers import SentenceTransformer
+
+PROMPT="""Use the following pieces of context to answer the question at the end.
+If the question is not directly related to the context, just say that you don't know, don't try to make up an answer. 
+If not enough information is available in the context, just say that you don't know, don't try to make up an answer.
+If you don't know the answer, just say that you don't know, don't try to make up an answer.
+In any case, please do not leverage your own knowledge.
+
+{context}
+
+Question: {question}
+Helpful Answer:"""
 
 class Database:
 
@@ -22,6 +34,7 @@ class Database:
     self.ollama = Ollama(base_url=config.ollama_url(), model=config.ollama_model(), callbacks=[self.stream_handler])
     self.vectorstore = Chroma(persist_directory=config.persist_directory(), embedding_function=self.embeddings)
     self.splitter = RecursiveCharacterTextSplitter(chunk_size=config.split_chunk_size(), chunk_overlap=config.split_chunk_overlap())
+    self.prompt = PromptTemplate(input_variables=['context', 'question'], template=PROMPT)
   
   def _build_embedder(self):
     model = self.config.embeddings_model()
@@ -84,12 +97,16 @@ class Database:
     print(f'[database] processing {question}')
 
     # retriever
-    retriever=self.vectorstore.as_retriever(search_type='similarity', search_kwargs={'k': self.config.similarity_document_count()})
+    retriever=self.vectorstore.as_retriever(
+      search_type='similarity',
+      search_kwargs={
+        'k': self.config.similarity_document_count(),
+      }
+    )
     print(f'[database] retriever: {retriever.search_type}, {retriever.search_kwargs}')
     
     # debug with similarity_search_with_score
     docs = self.vectorstore.similarity_search_with_score(question, k=self.config.similarity_document_count())
-    print(f'[database] found {len(docs)} similar documents')
     utils.dumpj([ {
       'content': d[0].page_content,
       'source': d[0].metadata['source'],
@@ -104,10 +121,18 @@ class Database:
     #   'source': d.metadata['source']
     # } for d in docs], 'relevant_documents.json')
 
+    # build chain
+    qachain = RetrievalQA.from_chain_type(
+      llm=self.ollama,
+      chain_type='stuff',
+      retriever=retriever,
+      return_source_documents=True,
+      chain_type_kwargs={ 'prompt': self.prompt },
+    )
+    utils.dumpj(qachain.combine_documents_chain.llm_chain.prompt.template, 'chain_template.json')
+
     # now query
     print('[database] retrieving')
-    qachain = RetrievalQA.from_chain_type(self.ollama, chain_type='stuff', retriever=retriever, return_source_documents=True)
-    utils.dumpj(qachain.combine_documents_chain.llm_chain.prompt.template, 'chain_template.json')
     res = qachain({"query": question})
 
     # extract sources
