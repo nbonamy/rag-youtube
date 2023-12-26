@@ -17,23 +17,28 @@ Helpful Answer:"""
 
 class QAChainConversational:
   
+    chain = None
+    
     @staticmethod
     def build(llm, retriever, memory):
     
-      # build prompt
-      prompt = PromptTemplate(input_variables=['context', 'chat_history', 'question'], template=PROMPT)
+      if QAChainConversational.chain is None:
       
-      # build chain
-      print('[chain] building conversational retrieval chain')
-      qachain = ConversationalRetrievalChain.from_llm(
-        llm=llm,
-        chain_type='stuff',
-        retriever=retriever,
-        memory=memory,
-        return_source_documents=True,
-        combine_docs_chain_kwargs={ 'prompt': prompt },
-      )
-      utils.dumpj(qachain.combine_docs_chain.llm_chain.prompt.template, 'chain_template.json')
+        # build prompt
+        prompt = PromptTemplate(input_variables=['context', 'chat_history', 'question'], template=PROMPT)
+        
+        # build chain
+        print('[chain] building conversational retrieval chain')
+        chain = ConversationalRetrievalChain.from_llm(
+          llm=llm,
+          chain_type='map_reduce',
+          retriever=retriever,
+          memory=memory,
+          return_source_documents=True,
+          #combine_docs_chain_kwargs={ 'prompt': prompt },
+        )
+        utils.dumpj(chain.combine_docs_chain.llm_chain.prompt.template, 'chain_template.json')
+        QAChainConversational.chain = chain
 
       # done
-      return (qachain, 'question')
+      return (QAChainConversational.chain, 'question')

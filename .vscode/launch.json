@@ -10,7 +10,7 @@
       "request": "launch",
       "program": "./src/app.py",
       "console": "integratedTerminal",
-      "justMyCode": true,
+      "justMyCode": false,
       "autoReload": {
         "enable": true,
         "pattern": "./src/*.py"

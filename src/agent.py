@@ -6,9 +6,11 @@ import utils
 import config
 import requests
 from chain_base import QAChainBase
+from chain_base_source import QAChainBaseWithSources
 from chain_conversation import QAChainConversational
 from stream_handler import StreamHandler
 
+import langchain
 from langchain.llms import Ollama
 from langchain.vectorstores import Chroma
 from langchain.schema.document import Document
@@ -20,6 +22,9 @@ from sentence_transformers import SentenceTransformer
 class Agent:
 
   def __init__(self, config):
+    if config.debug():
+      langchain.verbose = True
+      langchain.debug = True
     self.config = config
     self.__build_embedder()
     self.stream_handler = StreamHandler()
@@ -115,7 +120,7 @@ class Agent:
     res = qachain({key: question})
 
     # extract sources
-    sources = self.__build_sources(res['source_documents'], docs)
+    sources = self.__build_sources(res, docs, self.config.max_source_score())
     self.stream_handler.set_sources(sources)
 
     # done
@@ -135,32 +140,60 @@ class Agent:
       self.embeddings = HuggingFaceEmbeddings(model_name=model)
 
   def __build_qa_chain(self, retriever):
-    if self.config.conversational_chain():
+    chain_type = self.config.chain_type()
+    if chain_type == 'base':
+      return QAChainBase.build(self.ollama, retriever)
+    elif chain_type == 'base_with_sources':
+      return QAChainBaseWithSources.build(self.ollama, retriever)
+    elif chain_type == 'conversation':
       return QAChainConversational.build(self.ollama, retriever, self.memory)
     else:
-      return QAChainBase.build(self.ollama, retriever)
+      raise Exception(f'Chain type "{chain_type}" not in base, base_with_sources, conversation')
 
-  def __build_sources(self, source_docs, docs) -> list:
+  def __build_sources(self, result, docs, max_score) -> list:
 
+    # we need to do it in diffrerent ways depending on the chain type
+    # but also beccause RetrievalQAWithSourcesChain does not seem to be
+    # super consistent in how it returns sources
+
+    # extract video ids
+    video_ids = []
+    if 'sources' in result.keys() and len(result['sources']) > 0:
+      print('[agent] extracting sources from "sources"')
+      video_ids.extend([s.strip() for s in result['sources'].split(',')])
+
+    # try in text
+    if len(video_ids) == 0 and 'answer' in result.keys() or 'result' in result.keys():
+      answer = result['answer'] if 'answer' in result.keys() else result['result']
+      if 'SOURCES:' in answer:
+        print('[agent] extracting sources from "answer"')
+        video_ids.extend([s.strip() for s in result['answer'].split('SOURCES:')[1].split(',')])
+
+    # finally documents returned by retriever
+    if len(video_ids) == 0 and 'source_documents' in result.keys():
+      print('[agent] extracting sources from "source_documents"')
+      for source in result['source_documents']:
+        video_ids.append(source.metadata['source'])
+
+    # now build our sources
     sources = {}
-    for source in source_docs:
-      video_id = source.metadata['source']
-      if video_id in sources.keys():
-        continue
-      video_info = utils.get_video_info(video_id)
-      if video_info is not None:
-        sources[video_id] = {
-          'id': video_id,
-          'url': f'https://www.youtube.com/watch?v={video_id}',
-          'title': html.unescape(video_info['snippet']['title'])
-        }
-        if docs is not None:
-          for doc in docs:
-            if doc[0].metadata['source'] == video_id:
-              if 'score' in sources[video_id].keys():
-                sources[video_id]['score'] = min(sources[video_id]['score'], doc[1])
-              else:
-                sources[video_id]['score'] = doc[1]
-              break
+    for video_id in video_ids:
+      if video_id not in sources.keys():
+        video_info = utils.get_video_info(video_id)
+        if video_info is not None:
+          sources[video_id] = {
+            'id': video_id,
+            'url': utils.get_video_url(video_id),
+            'title': html.unescape(video_info['snippet']['title'])
+          }
+      if video_id in sources.keys() and docs is not None:
+        for doc in docs:
+          if doc[0].metadata['source'] == video_id:
+            score = doc[1]
+            if 'score' in sources[video_id].keys():
+              sources[video_id]['score'] = min(sources[video_id]['score'], score)
+            else:
+              sources[video_id]['score'] = score
+            break
 
-    return list(sources.values())
+    return list(filter(lambda source: 'score' not in source or max_score == 0.0 or source['score'] < max_score, sources.values()))

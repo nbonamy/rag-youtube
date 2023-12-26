@@ -16,22 +16,27 @@ Helpful Answer:"""
 
 class QAChainBase:
 
+  chain = None
+
   @staticmethod
   def build(llm, retriever):
 
-    # build prompt
-    prompt = PromptTemplate(input_variables=['context', 'question'], template=PROMPT)
+    if QAChainBase.chain is None:
     
-    # build chain
-    print('[chain] building basic retrieval chain')
-    qachain = RetrievalQA.from_chain_type(
-      llm=llm,
-      chain_type='stuff',
-      retriever=retriever,
-      return_source_documents=True,
-      chain_type_kwargs={ 'prompt': prompt },
-    )
-    utils.dumpj(qachain.combine_documents_chain.llm_chain.prompt.template, 'chain_template.json')
+      # build prompt
+      prompt = PromptTemplate(input_variables=['context', 'question'], template=PROMPT)
+      
+      # build chain
+      print('[chain] building basic retrieval chain')
+      chain = RetrievalQA.from_chain_type(
+        llm=llm,
+        chain_type='stuff',
+        retriever=retriever,
+        return_source_documents=True,
+        chain_type_kwargs={ 'prompt': prompt },
+      )
+      utils.dumpj(chain.combine_documents_chain.llm_chain.prompt.template, 'chain_template.json')
+      QAChainBase.chain = chain
 
     # done
-    return (qachain, 'query')
+    return (QAChainBase.chain, 'query')

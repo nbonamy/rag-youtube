@@ -40,7 +40,7 @@
 						<div class="avatar"><img :src="message.role == 'user' ? 'img/user.jpg' : channel.snippet.thumbnails.default.url"></div>
 						<div class="header">{{ message.role == 'user' ? 'You' : channel.snippet.title }}</div>
 						<div class="body">{{ message.text }}</div>
-						<div class="sources" v-if="message.sources">
+						<div class="sources" v-if="message.sources && message.sources.length > 0">
 							Sources:
 							<ul>
 								<li class="source" v-for="source in message.sources">

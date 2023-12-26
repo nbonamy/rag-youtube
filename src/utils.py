@@ -13,6 +13,9 @@ def get_video_info(video_id):
         return video
     return None
 
+def get_video_url(video_id):
+  return f'https://www.youtube.com/watch?v={video_id}'
+
 def dumpj(data, filename):
   with open(filename, 'w') as f:
     f.write(json.dumps(data, indent=2))

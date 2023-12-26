@@ -44,15 +44,15 @@ def main():
 
     # find title
     metadata = {
-      # 'id': video_id,
-      # 'title': 'Unknown',
-      # 'description': 'Unknown',
+      'title': 'Unknown',
+      'description': 'Unknown',
+      'url': utils.get_video_url(video_id),
       'source': video_id,
     }
-    # video = utils.get_video_info(video_id)
-    # if video is not None:
-    #   metadata['title'] = video['snippet']['title']
-    #   metadata['description'] = video['snippet']['description']
+    video = utils.get_video_info(video_id)
+    if video is not None:
+      metadata['title'] = video['snippet']['title']
+      metadata['description'] = video['snippet']['description']
 
     # load
     try:

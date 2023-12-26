@@ -74,18 +74,29 @@ The following options are available (values below are the default ones)
 [General]
 ollama_url=http://localhost:11434
 ollama_modal=mistral:latest
-conversational=True
 persist_dir=db
+debug=false
 
 [Embeddings]
 model=all-MiniLM-L6-v2
 
 [Splitter]
-split_chunk_size=1000
-split_chunk_overlap=200
+split_chunk_size=2500
+split_chunk_overlap=500
 
 [Search]
+chain_type=conversation
 similarity_document_count=4
+max_source_score=1.0
 ```
 
 For the embeddings model, default is to use a [HuggingFace Sentence Transformers models](https://www.sbert.net/docs/pretrained_models.html). You can specify `ollama` to use Ollama embeddings or `openai:xxxx` to use a [OpenAI Embeddings](https://platform.openai.com/docs/guides/embeddings/what-are-embeddings).
+
+For the `chain_type`, acceptable values are:
+- `base`
+- `base_with_sources`
+- `conversation` (default)
+
+## Debugging
+
+You can enable langchain through configuration. In that case, it is recommended to redirect the output to a text file and replace the following regex `[ \t]*"context": \[[\d, \t\n]*\],\n` with nothing to clear up the trace.
