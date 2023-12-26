@@ -29,6 +29,11 @@ def embed():
   embeddings = agent.calculate_embeddings(text)
   return { 'text': text, 'length': len(embeddings), 'embeddings': [float(a) for a in embeddings] }
 
+@app.route('/reset')
+def reset():
+  agent.reset()
+  return { 'status': 'ok' }
+
 @app.route('/ask')
 def ask():
 

@@ -28,6 +28,9 @@ class Agent:
     self.splitter = RecursiveCharacterTextSplitter(chunk_size=config.split_chunk_size(), chunk_overlap=config.split_chunk_overlap())
     self.memory = ConversationBufferMemory(memory_key='chat_history', max_len=50, return_messages=True, output_key='answer')
   
+  def reset(self):
+    self.memory.clear()
+
   def list_ollama_models(self) -> dict:
     url = f'{self.config.ollama_url()}/api/tags'
     return requests.get(url).json()

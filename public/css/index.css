@@ -1,11 +1,18 @@
 
 body {
-	width: 800px;
+	width: 900px;
 	margin: 0 auto;
 }
 
 .chat {
 	padding-top: 0;
+}
+
+.chat .reset {
+	float: right;
+	position: relative;
+	top: -16px;
+	cursor: pointer;
 }
 
 .chat .header .thumbnail {

@@ -34,6 +34,7 @@
 					<img :src="channel.snippet.thumbnails.default.url" class="thumbnail">
 					<div class="title"><a :href="'https://youtube.com/' + channel.snippet.customUrl" target="_blank">{{ channel.snippet.title }}</a></div>
 				</section>
+				<section class="reset" @click="reset"><b-icon icon="close-circle-outline" size="is-small"></b-icon> Clear</section>
 				<div class="discussion" ref="discussion">
 					<div class="message" :class="message.role" v-for="message in messages">
 						<div class="avatar"><img :src="message.role == 'user' ? 'img/user.jpg' : channel.snippet.thumbnails.default.url"></div>

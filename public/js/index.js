@@ -21,6 +21,17 @@ var vm = new Vue({
         this.ask()
       }
     },
+    reset() {
+      this.isLoading = true
+      axios.get('/reset').then(response => {
+        this.messages = [ ]
+        this.response = null
+        this.isLoading = false
+      }).catch(_ => {
+        this.isLoading = false
+        this.showError('Error while resetting model.')
+      })
+    },
     ask() {
       this.isLoading = true
       this.messages.push({ role: 'user', 'text': this.question })
