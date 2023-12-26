@@ -24,7 +24,7 @@ class QAChainConversational:
       prompt = PromptTemplate(input_variables=['context', 'chat_history', 'question'], template=PROMPT)
       
       # build chain
-      print('[database] building conversational retrieval chain')
+      print('[chain] building conversational retrieval chain')
       qachain = ConversationalRetrievalChain.from_llm(
         llm=llm,
         chain_type='stuff',

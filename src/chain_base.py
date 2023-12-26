@@ -23,7 +23,7 @@ class QAChainBase:
     prompt = PromptTemplate(input_variables=['context', 'question'], template=PROMPT)
     
     # build chain
-    print('[database] building basic retrieval chain')
+    print('[chain] building basic retrieval chain')
     qachain = RetrievalQA.from_chain_type(
       llm=llm,
       chain_type='stuff',

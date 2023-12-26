@@ -17,7 +17,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.embeddings import OpenAIEmbeddings, OllamaEmbeddings, HuggingFaceEmbeddings
 from sentence_transformers import SentenceTransformer
 
-class Database:
+class Agent:
 
   def __init__(self, config):
     self.config = config
@@ -41,12 +41,12 @@ class Database:
     #print(f'[database] adding {id} to database with metadata {metadata} and content of length {len(content)}')
 
     # split
-    print('[database] splitting text')
+    print('[agent] splitting text')
     all_splits = self.splitter.split_text(content)
     metadatas = [metadata] * len(all_splits)
     
-    # create database
-    print('[database] creating embeddings')
+    # create embeddings
+    print('[agent] creating embeddings')
     self.vectorstore.add_texts(all_splits, metadatas=metadatas)
 
     # done
@@ -59,11 +59,11 @@ class Database:
     #print(f'[database] adding {id} to database with metadata {metadata} and content of length {len(content)}')
 
     # split
-    print('[database] splitting text')
+    print('[agent] splitting text')
     all_splits = self.splitter.split_documents(documents)
 
     # create embeddings
-    print('[database] creating embeddings')
+    print('[agent] creating embeddings')
     self.vectorstore = Chroma.from_documents(
       documents=all_splits,
       embedding=self.embeddings,
@@ -77,7 +77,7 @@ class Database:
   def query(self, question) -> dict:
 
     # log
-    print(f'[database] processing {question}')
+    print(f'[agent] processing {question}')
 
     # retriever
     retriever=self.vectorstore.as_retriever(
@@ -86,7 +86,7 @@ class Database:
         'k': self.config.similarity_document_count(),
       }
     )
-    print(f'[database] retriever: {retriever.search_type}, {retriever.search_kwargs}')
+    print(f'[agent] retriever: {retriever.search_type}, {retriever.search_kwargs}')
     
     # debug with similarity_search_with_score
     docs = self.vectorstore.similarity_search_with_score(question, k=self.config.similarity_document_count())
@@ -98,7 +98,7 @@ class Database:
 
     # # debug with get_relevant_documents
     # docs = retriever.get_relevant_documents(question)
-    # print(f'[database] found {len(docs)} relevant documents')
+    # print(f'[agent] found {len(docs)} relevant documents')
     # utils.dumpj([ {
     #   'content': d.page_content,
     #   'source': d.metadata['source']
@@ -108,7 +108,7 @@ class Database:
     (qachain, key) = self.__build_qa_chain(retriever)
 
     # now query
-    print('[database] retrieving')
+    print('[agent] retrieving')
     res = qachain({key: question})
 
     # extract sources
@@ -120,7 +120,7 @@ class Database:
 
   def __build_embedder(self):
     model = self.config.embeddings_model()
-    print(f'[database] building embeddings for {model}')
+    print(f'[agent] building embeddings for {model}')
     if model == 'ollama':
       self.encoder = None
       self.embeddings = OllamaEmbeddings(base_url=config.ollama_url(), model=config.ollama_model())

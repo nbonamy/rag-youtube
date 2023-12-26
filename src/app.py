@@ -3,8 +3,8 @@
 import utils
 import consts
 import os.path
+from agent import Agent
 from config import Config
-from database import Database
 from bottle import Bottle, request, abort, static_file
 
 # we need this as a global so we can use it in the ask endpoint
@@ -16,7 +16,7 @@ app.config.update({
   'config': Config(consts.CONFIG_PATH)
 })
 
-database = Database(app.config.get('config'))
+agent = Agent(app.config.get('config'))
 
 @app.route('/info')
 def info():
@@ -26,7 +26,7 @@ def info():
 @app.route('/embed')
 def embed():
   text = request.query.text
-  embeddings = database.calculate_embeddings(text)
+  embeddings = agent.calculate_embeddings(text)
   return { 'text': text, 'length': len(embeddings), 'embeddings': [float(a) for a in embeddings] }
 
 @app.route('/ask')
@@ -35,7 +35,7 @@ def ask():
   # do it
   question = request.query.question
   start = utils.now()
-  result = database.query(question)
+  result = agent.query(question)
   processing_time = utils.now() - start
   
   # done

@@ -3,24 +3,24 @@ import os
 import json
 import consts
 import utils
+from agent import Agent
 from config import Config
-from database import Database
 from langchain.document_loaders import DirectoryLoader, TextLoader
 
 def main():
 
   # init
   config = Config(consts.CONFIG_PATH)
-  database = Database(config)
+  agent = Agent(config)
 
   # loader = DirectoryLoader('./captions', glob="./_*.cleaned.vtt", loader_cls=TextLoader)
   # documents = loader.load()
-  # database.add_documents(documents, {})
+  # agent.add_documents(documents, {})
   # return
 
   # track loaded
   loaded = []
-  if os.path.exists(database.persist_directory) and os.path.exists('loaded.json'):
+  if os.path.exists(config.persist_directory()) and os.path.exists('loaded.json'):
     loaded = json.load(open('loaded.json'))
 
   # iterate on captions files
@@ -58,16 +58,16 @@ def main():
     try:
     
       # do it
-      print(f'[database] adding {filename} to database...')
+      print(f'[loader] adding {filename} to database...')
       with open(f'captions/{filename}') as f:
-        database.add_text(f.read(), metadata)
+        agent.add_text(f.read(), metadata)
     
       # update index
       loaded.append(filename)
       json.dump(loaded, open('loaded.json', 'w'), indent=2)
     
     except Exception as e:
-      print(f'[database] error adding {filename} to database: {e}')
+      print(f'[loader] error adding {filename} to database: {e}')
       continue
 
 if __name__ == '__main__':
