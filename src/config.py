@@ -1,3 +1,5 @@
+
+import consts
 import configparser
 
 # config
@@ -15,30 +17,30 @@ class Config:
     self.config.read(path)
 
   def ollama_url(self):
-    return self.__get_value(CONFIG_SECTION_GENERAL, 'ollama_url') or 'http://localhost:11434'
+    return self.__get_value(CONFIG_SECTION_GENERAL, 'ollama_url') or consts.DEFAULT_OLLAMA_URL
   
   # https://ollama.ai/library
   def ollama_model(self):
-    return self.__get_value(CONFIG_SECTION_GENERAL, 'ollama_model') or 'mistral:latest'
+    return self.__get_value(CONFIG_SECTION_GENERAL, 'ollama_model') or consts.DEFAULT_OLLAMA_MODEL
 
   def persist_directory(self):
-    return self.__get_value(CONFIG_SECTION_GENERAL, 'persist_dir') or 'db'
+    return self.__get_value(CONFIG_SECTION_GENERAL, 'persist_dir') or consts.DEFAULT_PERSIST_DIR
 
   def conversational_chain(self):
-    value = self.__get_value(CONFIG_SECTION_GENERAL, 'conversational') or 'true'
+    value = self.__get_value(CONFIG_SECTION_GENERAL, 'conversational') or consts.DEFAULT_CONVERSATIONAL
     return self.__is_bool(value)
 
   def embeddings_model(self):
-    return self.__get_value(CONFIG_SECTION_EMBEDDINGS, 'model') or 'all-MiniLM-L6-v2'
+    return self.__get_value(CONFIG_SECTION_EMBEDDINGS, 'model') or consts.DEFAULT_EMBEDDINGS_MODEL
 
   def split_chunk_size(self):
-    return int(self.__get_value(CONFIG_SECTION_SPLITTER, 'split_chunk_size') or 1000)
+    return int(self.__get_value(CONFIG_SECTION_SPLITTER, 'split_chunk_size') or consts.DEFAULT_SPLIT_CHUNK_SIZE)
 
   def split_chunk_overlap(self):
-    return int(self.__get_value(CONFIG_SECTION_SPLITTER, 'split_chunk_overlap') or 200)
+    return int(self.__get_value(CONFIG_SECTION_SPLITTER, 'split_chunk_overlap') or consts.DEFAULT_SPLIT_CHUNK_OVERLAP)
 
   def similarity_document_count(self):
-    return int(self.__get_value(CONFIG_SECTION_SEARCH, 'similarity_document_count') or 4)
+    return int(self.__get_value(CONFIG_SECTION_SEARCH, 'similarity_document_count') or consts.DEFAULT_SIMILARITY_DOCUMENT_COUNT)
 
   def __get_value(self, section, option):
     if self.config.has_option(section, option):
