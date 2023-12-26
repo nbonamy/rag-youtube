@@ -16,6 +16,11 @@ var vm = new Vue({
     }
   },
   methods: {
+    onkey(event) {
+      if (event.keyCode == 13) {
+        this.ask()
+      }
+    },
     ask() {
       this.isLoading = true
       this.messages.push({ role: 'user', 'text': this.question })

@@ -50,7 +50,7 @@
 					</div>
 				</div>
 				<b-field>
-					<b-input v-model="question" placeholder="Ask any question!"></b-input>
+					<b-input v-model="question" placeholder="Ask any question!" @keydown.native="onkey"></b-input>
 					<p class="control"><b-button type="is-info" label="Ask" @click="ask"/></p>
 				</b-field>
 				<span v-if="response">{{ performance }}</span>
