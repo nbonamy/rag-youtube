@@ -74,6 +74,7 @@ The following options are available (values below are the default ones)
 [General]
 ollama_url=http://localhost:11434
 ollama_modal=mistral:latest
+conversational=True
 persist_dir=db
 
 [Embeddings]

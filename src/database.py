@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
 
 import os
+import html
 import utils
 import config
 import requests
 from langchain.llms import Ollama
 from langchain.vectorstores import Chroma
 from langchain.prompts import PromptTemplate
+from langchain.memory import ConversationBufferMemory
 from langchain.schema.document import Document
 from langchain.callbacks.base import BaseCallbackHandler
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.embeddings import OpenAIEmbeddings, OllamaEmbeddings, HuggingFaceEmbeddings
-from langchain.chains import RetrievalQA, RetrievalQAWithSourcesChain
+from langchain.chains import RetrievalQA, ConversationalRetrievalChain
 from sentence_transformers import SentenceTransformer
 
 PROMPT="""Use the following pieces of context to answer the question at the end.
@@ -22,6 +24,7 @@ In any case, please do not leverage your own knowledge.
 
 {context}
 
+{chat_history}
 Question: {question}
 Helpful Answer:"""
 
@@ -29,14 +32,14 @@ class Database:
 
   def __init__(self, config):
     self.config = config
-    self._build_embedder()
+    self.__build_embedder()
     self.stream_handler = StreamHandler()
     self.ollama = Ollama(base_url=config.ollama_url(), model=config.ollama_model(), callbacks=[self.stream_handler])
     self.vectorstore = Chroma(persist_directory=config.persist_directory(), embedding_function=self.embeddings)
     self.splitter = RecursiveCharacterTextSplitter(chunk_size=config.split_chunk_size(), chunk_overlap=config.split_chunk_overlap())
-    self.prompt = PromptTemplate(input_variables=['context', 'question'], template=PROMPT)
+    self.memory = ConversationBufferMemory(memory_key='chat_history', max_len=50, return_messages=True, output_key='answer')
   
-  def _build_embedder(self):
+  def __build_embedder(self):
     model = self.config.embeddings_model()
     print(f'[database] building embeddings for {model}')
     if model == 'ollama':
@@ -85,7 +88,11 @@ class Database:
 
     # create embeddings
     print('[database] creating embeddings')
-    self.vectorstore = Chroma.from_documents(documents=all_splits, embedding=self.embeddings, persist_directory=self.config.persist_directory())
+    self.vectorstore = Chroma.from_documents(
+      documents=all_splits,
+      embedding=self.embeddings,
+      persist_directory=self.config.persist_directory()
+    )
 
     # done
     self.vectorstore.persist()
@@ -122,27 +129,65 @@ class Database:
     # } for d in docs], 'relevant_documents.json')
 
     # build chain
-    qachain = RetrievalQA.from_chain_type(
-      llm=self.ollama,
-      chain_type='stuff',
-      retriever=retriever,
-      return_source_documents=True,
-      chain_type_kwargs={ 'prompt': self.prompt },
-    )
-    utils.dumpj(qachain.combine_documents_chain.llm_chain.prompt.template, 'chain_template.json')
+    (qachain, key) = self.__build_qa_chain(retriever)
 
     # now query
     print('[database] retrieving')
-    res = qachain({"query": question})
+    res = qachain({key: question})
 
     # extract sources
-    sources = self._build_sources(res['source_documents'], docs)
+    sources = self.__build_sources(res['source_documents'], docs)
     self.stream_handler.set_sources(sources)
 
     # done
     return self.stream_handler.output()
 
-  def _build_sources(self, source_docs, docs) -> list:
+  def __build_qa_chain(self, retriever):
+    if self.config.conversational_chain():
+      return self.__build_convesational_qa_chain(retriever)
+    else:
+      return self.__build_base_qa_chain(retriever)
+
+  def __build_base_qa_chain(self, retriever):
+
+    # build prompt
+    prompt = PromptTemplate(input_variables=['context', 'question'], template=PROMPT.replace('{chat_history}', ''))
+    
+    # build chain
+    print('[database] building basic retrieval chain')
+    qachain = RetrievalQA.from_chain_type(
+      llm=self.ollama,
+      chain_type='stuff',
+      retriever=retriever,
+      return_source_documents=True,
+      chain_type_kwargs={ 'prompt': prompt },
+    )
+    utils.dumpj(qachain.combine_documents_chain.llm_chain.prompt.template, 'chain_template.json')
+
+    # done
+    return (qachain, 'query')
+
+  def __build_convesational_qa_chain(self, retriever):
+
+    # build prompt
+    prompt = PromptTemplate(input_variables=['context', 'chat_history', 'question'], template=PROMPT)
+    
+    # build chain
+    print('[database] building conversational retrieval chain')
+    qachain = ConversationalRetrievalChain.from_llm(
+      llm=self.ollama,
+      chain_type='stuff',
+      retriever=retriever,
+      memory=self.memory,
+      return_source_documents=True,
+      combine_docs_chain_kwargs={ 'prompt': prompt },
+    )
+    utils.dumpj(qachain.combine_docs_chain.llm_chain.prompt.template, 'chain_template.json')
+
+    # done
+    return (qachain, 'question')
+
+  def __build_sources(self, source_docs, docs) -> list:
 
     sources = {}
     for source in source_docs:
@@ -154,7 +199,7 @@ class Database:
         sources[video_id] = {
           'id': video_id,
           'url': f'https://www.youtube.com/watch?v={video_id}',
-          'title': video_info['snippet']['title']
+          'title': html.unescape(video_info['snippet']['title'])
         }
         if docs is not None:
           for doc in docs:
