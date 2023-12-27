@@ -49,12 +49,12 @@ class Agent:
     #print(f'[database] adding {id} to database with metadata {metadata} and content of length {len(content)}')
 
     # split
-    print('[agent] splitting text')
+    #print('[agent] splitting text')
     all_splits = self.splitter.split_text(content)
     metadatas = [metadata] * len(all_splits)
     
     # create embeddings
-    print('[agent] creating embeddings')
+    #print('[agent] creating embeddings')
     self.vectorstore.add_texts(all_splits, metadatas=metadatas)
 
     # done
@@ -67,11 +67,11 @@ class Agent:
     #print(f'[database] adding {id} to database with metadata {metadata} and content of length {len(content)}')
 
     # split
-    print('[agent] splitting text')
+    #print('[agent] splitting text')
     all_splits = self.splitter.split_documents(documents)
 
     # create embeddings
-    print('[agent] creating embeddings')
+    #print('[agent] creating embeddings')
     self.vectorstore = Chroma.from_documents(
       documents=all_splits,
       embedding=self.embeddings,
