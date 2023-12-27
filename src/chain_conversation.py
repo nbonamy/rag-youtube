@@ -37,7 +37,12 @@ class QAChainConversational:
           return_source_documents=True,
           #combine_docs_chain_kwargs={ 'prompt': prompt },
         )
-        utils.dumpj(chain.combine_docs_chain.llm_chain.prompt.template, 'chain_template.json')
+        utils.dumpj({
+          'generator': chain.question_generator.prompt.template,
+          'collapse': chain.combine_docs_chain.collapse_document_chain.llm_chain.prompt.template,
+          'combine': chain.combine_docs_chain.combine_document_chain.llm_chain.prompt.template,
+          'llm': chain.combine_docs_chain.llm_chain.prompt.template,
+        }, 'chain_templates.json')
         QAChainConversational.chain = chain
 
       # done

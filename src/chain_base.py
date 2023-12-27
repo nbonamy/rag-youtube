@@ -35,7 +35,9 @@ class QAChainBase:
         return_source_documents=True,
         chain_type_kwargs={ 'prompt': prompt },
       )
-      utils.dumpj(chain.combine_documents_chain.llm_chain.prompt.template, 'chain_template.json')
+      utils.dumpj({
+        'llm': chain.combine_documents_chain.llm_chain.prompt.template,
+      }, 'chain_templates.json')
       QAChainBase.chain = chain
 
     # done

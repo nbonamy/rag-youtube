@@ -17,9 +17,12 @@ class StreamHandler(BaseCallbackHandler):
   def set_sources(self, sources: list) -> None:
     self.sources = sources
 
-  def on_llm_start(self, serialized: dict, prompts: dict, **kwargs) -> None:
-    print('[agent] llm starting')
+  def on_llm_start(self, serialized: dict, prompts: list, **kwargs) -> None:
+    print(f'[agent] llm starting ("{prompts[0][0:64]}...")')
     self.reset()
+
+  def on_llm_end(self, response: dict, **kwargs) -> None:
+    print('[agent] llm ended')
   
   def on_llm_new_token(self, token: str, **kwargs) -> None:
     if self.text is None:

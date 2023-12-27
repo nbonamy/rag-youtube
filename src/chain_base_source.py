@@ -18,7 +18,9 @@ class QAChainBaseWithSources:
         retriever=retriever,
         return_source_documents=True,
       )
-      utils.dumpj(chain.combine_documents_chain.llm_chain.prompt.template, 'chain_template.json')
+      utils.dumpj({
+        'llm': chain.combine_documents_chain.llm_chain.prompt.template,
+      }, 'chain_templates.json')
       QAChainBaseWithSources.chain = chain
 
     # done
