@@ -99,4 +99,4 @@ For the `chain_type`, acceptable values are:
 
 ## Debugging
 
-You can enable langchain through configuration. In that case, it is recommended to redirect the output to a text file and replace the following regex `[ \t]*"context": \[[\d, \t\n]*\],\n` with nothing to clear up the trace.
+You can enable langchain debugging through configuration. In that case, it is recommended to redirect the output to a text file and replace the following regex `[ \t]*"context": \[[\d, \t\n]*\],\n` with nothing to clear up the trace.
