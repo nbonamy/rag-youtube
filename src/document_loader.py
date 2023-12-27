@@ -29,7 +29,7 @@ def main():
 
   # track loaded
   loaded = []
-  if os.path.exists(config.persist_directory()) and os.path.exists('loaded.json'):
+  if os.path.exists(config.db_persist_directory()) and os.path.exists('loaded.json'):
     loaded = json.load(open('loaded.json'))
 
   # iterate on captions files

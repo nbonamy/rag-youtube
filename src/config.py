@@ -27,8 +27,8 @@ class Config:
   def ollama_model(self):
     return self.__get_value(CONFIG_SECTION_GENERAL, 'ollama_model') or consts.DEFAULT_OLLAMA_MODEL
 
-  def persist_directory(self):
-    return self.__get_value(CONFIG_SECTION_GENERAL, 'persist_dir') or consts.DEFAULT_PERSIST_DIR
+  def db_persist_directory(self):
+    return self.__get_value(CONFIG_SECTION_GENERAL, 'db_persist_dir') or consts.DEFAULT_DB_PERSIST_DIR
 
   def embeddings_model(self):
     return self.__get_value(CONFIG_SECTION_EMBEDDINGS, 'model') or consts.DEFAULT_EMBEDDINGS_MODEL

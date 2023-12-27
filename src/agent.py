@@ -29,7 +29,7 @@ class Agent:
     self.__build_embedder()
     self.stream_handler = StreamHandler()
     self.ollama = Ollama(base_url=config.ollama_url(), model=config.ollama_model(), callbacks=[self.stream_handler])
-    self.vectorstore = Chroma(persist_directory=config.persist_directory(), embedding_function=self.embeddings)
+    self.vectorstore = Chroma(persist_directory=config.db_persist_directory(), embedding_function=self.embeddings)
     self.splitter = RecursiveCharacterTextSplitter(chunk_size=config.split_chunk_size(), chunk_overlap=config.split_chunk_overlap())
     self.memory = ConversationBufferMemory(memory_key='chat_history', max_len=50, return_messages=True, output_key='answer')
   
@@ -75,7 +75,7 @@ class Agent:
     self.vectorstore = Chroma.from_documents(
       documents=all_splits,
       embedding=self.embeddings,
-      persist_directory=self.config.persist_directory()
+      persist_directory=self.config.db_persist_directory()
     )
 
     # done
