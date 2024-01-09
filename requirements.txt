@@ -1,6 +1,8 @@
-google-api-python-client
-sentence_transformers
-requests
-langchain
+bottle
 chromadb
+langchain
+langchain-community
+sentence_transformers
+google-api-python-client
+requests
 yt_dlp

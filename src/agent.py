@@ -11,12 +11,12 @@ from chain_conversation import QAChainConversational
 from stream_handler import StreamHandler
 
 import langchain
-from langchain.llms import Ollama
-from langchain.vectorstores import Chroma
+from langchain_community.llms import Ollama
 from langchain.schema.document import Document
 from langchain.memory import ConversationBufferMemory
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.embeddings import OpenAIEmbeddings, OllamaEmbeddings, HuggingFaceEmbeddings
+from langchain_community.embeddings import OpenAIEmbeddings, OllamaEmbeddings, HuggingFaceEmbeddings
+from langchain_community.vectorstores import Chroma
 from sentence_transformers import SentenceTransformer
 
 class Agent:
