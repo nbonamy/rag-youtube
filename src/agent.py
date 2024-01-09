@@ -16,8 +16,8 @@ from langchain.schema.document import Document
 from langchain.memory import ConversationBufferMemory
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.embeddings import OpenAIEmbeddings, OllamaEmbeddings, HuggingFaceEmbeddings
+from sentence_transformers import SentenceTransformer, util
 from langchain_community.vectorstores import Chroma
-from sentence_transformers import SentenceTransformer
 
 class Agent:
 
@@ -42,6 +42,14 @@ class Agent:
 
   def calculate_embeddings(self, text) -> dict:
     return self.encoder.encode(text)
+
+  def calculate_similarity(self, text1, text2) -> dict:
+    e1 = self.encoder.encode(text1)
+    e2 = self.encoder.encode(text2)
+    if self.config.embeddings_model() in ['paraphrase-multilingual-MiniLM-L12-v2']:
+      return util.cos_sim(e1, e2)
+    else:
+      return util.dot_score(e1, e2)
 
   def add_text(self, content, metadata) -> None:
 

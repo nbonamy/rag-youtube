@@ -29,6 +29,13 @@ def embed():
   embeddings = agent.calculate_embeddings(text)
   return { 'text': text, 'length': len(embeddings), 'embeddings': [float(a) for a in embeddings] }
 
+@app.route('/similarity')
+def embed():
+  text1 = request.query.text1
+  text2 = request.query.text2
+  similarity = agent.calculate_similarity(text1, text2)
+  return { 'text1': text1, 'text2': text2, 'similarity': float(similarity[0]) }
+
 @app.route('/reset')
 def reset():
   agent.reset()
