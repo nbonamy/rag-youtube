@@ -16,7 +16,7 @@ class QAChainBaseWithSources:
         llm=llm,
         chain_type='stuff',
         retriever=retriever,
-        return_source_documents=True,
+        #return_source_documents=True,
       )
       utils.dumpj({
         'llm': chain.combine_documents_chain.llm_chain.prompt.template,

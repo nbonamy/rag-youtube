@@ -32,8 +32,8 @@ class QAChainBase:
         llm=llm,
         chain_type='stuff',
         retriever=retriever,
-        return_source_documents=True,
-        chain_type_kwargs={ 'prompt': prompt },
+        #return_source_documents=True,
+        #chain_type_kwargs={ 'prompt': prompt },
       )
       utils.dumpj({
         'llm': chain.combine_documents_chain.llm_chain.prompt.template,
