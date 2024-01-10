@@ -44,9 +44,10 @@ class Agent:
     return self.encoder.encode(text)
 
   def calculate_similarity(self, text1, text2) -> dict:
+    model = self.config.embeddings_model()
     e1 = self.encoder.encode(text1)
     e2 = self.encoder.encode(text2)
-    if self.config.embeddings_model() in ['paraphrase-multilingual-MiniLM-L12-v2']:
+    if 'paraphrase' in model:
       return util.cos_sim(e1, e2)
     else:
       return util.dot_score(e1, e2)
