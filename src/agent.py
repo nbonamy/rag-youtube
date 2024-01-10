@@ -151,9 +151,9 @@ class Agent:
     chain_type = self.config.chain_type()
     if chain_type == 'base':
       return QAChainBase.build(self.ollama, retriever)
-    elif chain_type == 'base_with_sources' or chain_type == 'base_sourced':
+    elif 'source' in chain_type:
       return QAChainBaseWithSources.build(self.ollama, retriever)
-    elif chain_type == 'conversation' or chain_type == 'conversational':
+    elif 'conversation' in chain_type:
       return QAChainConversational.build(self.ollama, retriever, self.memory)
     else:
       raise Exception(f'Chain type "{chain_type}" not in base, base_with_sources, conversation')
