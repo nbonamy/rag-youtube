@@ -5,7 +5,7 @@ import consts
 import utils
 from agent import Agent
 from config import Config
-from langchain.document_loaders import DirectoryLoader, TextLoader
+from langchain_community.document_loaders import DirectoryLoader, TextLoader
 
 def main():
 
