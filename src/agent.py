@@ -171,13 +171,6 @@ class Agent:
       print('[agent] extracting sources from "sources"')
       video_ids.extend([s.strip() for s in result['sources'].split(',')])
 
-    # try in text
-    if len(video_ids) == 0 and 'answer' in result.keys() or 'result' in result.keys():
-      answer = result['answer'] if 'answer' in result.keys() else result['result']
-      if 'SOURCES:' in answer:
-        print('[agent] extracting sources from "answer"')
-        video_ids.extend([s.strip() for s in result['answer'].split('SOURCES:')[1].split(',')])
-
     # finally documents returned by retriever
     if len(video_ids) == 0 and 'source_documents' in result.keys():
       print('[agent] extracting sources from "source_documents"')
