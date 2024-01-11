@@ -7,6 +7,10 @@ class StreamHandler(BaseCallbackHandler):
     self.reset()
 
   def reset(self):
+    self.prompts = []
+    self.__reset()
+  
+  def __reset(self):
     self.created = utils.now()
     self.text = None
     self.sources = []
@@ -19,7 +23,8 @@ class StreamHandler(BaseCallbackHandler):
 
   def on_llm_start(self, serialized: dict, prompts: list, **kwargs) -> None:
     print(f'[agent] llm starting ("{prompts[0][0:64]}...")')
-    self.reset()
+    self.prompts.extend(prompts)
+    self.__reset()
 
   def on_llm_end(self, response: dict, **kwargs) -> None:
     print('[agent] llm ended')
@@ -43,6 +48,7 @@ class StreamHandler(BaseCallbackHandler):
 
   def output(self) -> dict:
     return {
+      'prompts': self.prompts,
       'text': self.text.strip(),
       'sources': self.sources,
       'performance': {

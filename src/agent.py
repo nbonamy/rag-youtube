@@ -43,6 +43,9 @@ class Agent:
   def calculate_embeddings(self, text) -> dict:
     return self.encoder.encode(text)
 
+  def reverse_embeddings(self, embeddings) -> dict:
+    return self.encoder.decode(embeddings)
+
   def calculate_similarity(self, text1, text2) -> dict:
     model = self.config.embeddings_model()
     e1 = self.encoder.encode(text1)
@@ -95,6 +98,9 @@ class Agent:
 
     # log
     print(f'[agent] processing {question}')
+
+    # reset
+    self.stream_handler.reset()
 
     # retriever
     retriever=self.vectorstore.as_retriever(
