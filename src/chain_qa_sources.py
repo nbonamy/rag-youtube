@@ -31,7 +31,7 @@ class QAChainBaseWithSources(ChainBase):
       llm=llm,
       chain_type=chain_type,
       retriever=retriever,
-      #return_source_documents=True,
+      #return_source_documents=config.return_sources(),
       chain_type_kwargs=self._get_prompt_kwargs(config),
     )
     self._dump_chain_prompts()

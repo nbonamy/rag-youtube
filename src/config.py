@@ -59,6 +59,10 @@ class Config:
     value = self.__get_value(CONFIG_SECTION_SEARCH, 'custom_prompts') or consts.DEFAULT_CUSTOM_PROMPTS
     return self.__is_bool(value)
 
+  def return_sources(self):
+    value = self.__get_value(CONFIG_SECTION_SEARCH, 'return_sources') or consts.DEFAULT_RETURN_SOURCES
+    return self.__is_bool(value)
+
   def __get_value(self, section, option):
     if self.config.has_option(section, option):
       return self.config.get(section, option).strip("'")

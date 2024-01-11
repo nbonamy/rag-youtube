@@ -14,7 +14,7 @@ class QAChainConversational(ChainBase):
       chain_type=chain_type,
       retriever=retriever,
       memory=memory,
-      #return_source_documents=True,
+      return_source_documents=config.return_sources(),
       combine_docs_chain_kwargs=self._get_prompt_kwargs(config),
     )
     self._dump_chain_prompts()
