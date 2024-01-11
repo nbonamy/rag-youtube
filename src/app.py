@@ -46,13 +46,9 @@ def ask():
 
   # do it
   question = request.query.question
-  start = utils.now()
   result = agent.query(question)
-  processing_time = utils.now() - start
   
   # done
-  result['performance']['processing_time'] = int(processing_time)
-  result['performance']['total_time'] = int(processing_time)
   return result
 
 @app.route('/<filepath:path>')

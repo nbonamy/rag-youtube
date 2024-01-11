@@ -1,5 +1,6 @@
 
 import utils
+from uuid import UUID
 from langchain.callbacks.base import BaseCallbackHandler
 
 class StreamHandler(BaseCallbackHandler):
@@ -7,53 +8,85 @@ class StreamHandler(BaseCallbackHandler):
     self.reset()
 
   def reset(self):
-    self.prompts = []
-    self.__reset()
-  
-  def __reset(self):
-    self.created = utils.now()
-    self.text = None
-    self.sources = []
+    self.llm_runs = []
     self.start = None
     self.end = None
-    self.tokens = 0
-
+    self.last_run_id = None
+  
   def set_sources(self, sources: list) -> None:
     self.sources = sources
 
   def on_llm_start(self, serialized: dict, prompts: list, **kwargs) -> None:
     print(f'[agent] llm starting ("{prompts[0][0:64]}...")')
-    self.prompts.extend(prompts)
-    self.__reset()
+    if self.start is None:
+      self.start = utils.now()
+    self.llm_runs.append({
+      'id': kwargs['run_id'].hex,
+      'prompts': prompts[0],
+      'created': utils.now(),
+      'text': None,
+      'end': None,
+      'tokens': 0,
+      'time_1st_token': None,
+      'tokens_per_sec': None
+    })
 
   def on_llm_end(self, response: dict, **kwargs) -> None:
-    print('[agent] llm ended')
+    self.end = utils.now()
+    self.last_run_id = kwargs['run_id']
+    run = self.__get_run(kwargs['run_id'])
+    if run is None:
+      print(f'[agent] on_llm_end called for unknown run id {run_id}')
+      return
+    run['end'] = utils.now()
+    run['time_1st_token'] = self.time_1st_token(run)
+    run['tokens_per_sec'] = self.tokens_per_sec(run)
   
   def on_llm_new_token(self, token: str, **kwargs) -> None:
-    if self.text is None:
-      self.text = token
-      self.start = utils.now()
-      self.end = utils.now()
-      self.tokens = 1
-    else:
-      self.text += token
-      self.tokens += 1
-      self.end = utils.now()
+    run = self.__get_run(kwargs['run_id'])
+    if run is None:
+      print(f'[agent] on_llm_new_token called for unknown run id {run_id}')
+      return
+    if run['text'] is None:
+      run['start'] = utils.now()
+      run['text'] = ''
+      run['tokens'] = 0
+    run['text'] += token
+    run['tokens'] += 1
+    run['end'] = utils.now()
 
-  def time_1st_token(self) -> float:
-    return self.start - self.created
+  def time_1st_token(self, run) -> int:
+    return None if 'start' not in run else int(run['start'] - run['created'])
 
-  def tokens_per_sec(self)  -> float:
-    return self.tokens / (self.end - self.start) * 1000
+  def tokens_per_sec(self, run)  -> float:
+    return None if 'start' not in run else round(run['tokens'] / (run['end'] - run['start']) * 1000, 2)
 
   def output(self) -> dict:
+    last_run = self.__get_run(self.last_run_id)
     return {
-      'prompts': self.prompts,
-      'text': self.text.strip(),
+      'runs': self.llm_runs,
+      'text': last_run['text'],
       'sources': self.sources,
       'performance': {
-        'tokens': self.tokens,
-        'time_1st_token': int(self.time_1st_token()),
-        'tokens_per_sec': round(self.tokens_per_sec(), 2)
+        'total_time': int(self.end - self.start),
+        'tokens': self.__get_sum_across_runs('tokens'),
+        'time_1st_token': self.__get_avg_across_runs('time_1st_token'),
+        'tokens_per_sec': self.__get_avg_across_runs('tokens_per_sec'),
       }
     }
+
+  def __get_sum_across_runs(self, key: str) -> any:
+    return sum(value for value in self.__get_not_none_across_runs(key))
+
+  def __get_avg_across_runs(self, key: str) -> any:
+    values = self.__get_not_none_across_runs(key)
+    return sum(value for value in values) / len(values)
+
+  def __get_not_none_across_runs(self, key: str) -> list:
+    return [run[key] for run in self.llm_runs if run[key] is not None]
+
+  def __get_run(self, id: UUID) -> dict:
+    for run in self.llm_runs:
+      if run['id'] == id.hex:
+        return run
+    return None
