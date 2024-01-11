@@ -20,7 +20,6 @@ agent = Agent(app.config.get('config'))
 
 @app.route('/info')
 def info():
-  print('hello')
   return static_file('channel_info.json', root='./')
 
 @app.route('/embed')
