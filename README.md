@@ -68,36 +68,14 @@ Then access `http://localhost:5555`.
 
 ## Configuration
 
-You can change some defaults by creating a `rag-youtube.conf` file in the base folder.
-
-The following options are available (values below are the default ones)
-
-```
-[General]
-ollama_url=http://localhost:11434
-ollama_modal=mistral:latest
-db_persist_dir=db
-debug=false
-
-[Embeddings]
-model=all-MiniLM-L6-v2
-
-[Splitter]
-split_chunk_size=2500
-split_chunk_overlap=500
-
-[Search]
-chain_type=conversation
-similarity_document_count=4
-max_source_score=1.0
-```
+You can change some defaults by creating a `rag-youtube.conf` file in the base folder. A good way to start is to copy `rag-youtube.sample.conf`: it contains all optios commented out with default values specified. Feel free to play with them!
 
 For the embeddings model, default is to use a [HuggingFace Sentence Transformers models](https://www.sbert.net/docs/pretrained_models.html). You can specify `ollama` to use Ollama embeddings or `openai:xxxx` to use a [OpenAI Embeddings](https://platform.openai.com/docs/guides/embeddings/what-are-embeddings).
 
-For the `chain_type`, acceptable values are:
-- `base`
-- `base_with_sources`
-- `conversation` (default)
+For enumerated options, acceptables values are:
+- `chain_type`: `base`, `sources`, `conversation`
+- `doc_chain_type`: `stuff`, `map_reduce`. `refine` and `map_rerank` have not been tested
+- `search_type`: `similarity`, `mmr`
 
 ## Debugging
 
