@@ -1,5 +1,6 @@
 
 import utils
+from chain_base import ChainBase
 from langchain.prompts import PromptTemplate
 from langchain.chains import ConversationalRetrievalChain
 
@@ -15,12 +16,12 @@ In any case, please do not leverage your own knowledge.
 Question: {question}
 Helpful Answer:"""
 
-class QAChainConversational:
+class QAChainConversational(ChainBase):
   
     chain = None
     
     @staticmethod
-    def build(llm, retriever, memory):
+    def build(llm, retriever, memory, chain_type):
     
       if QAChainConversational.chain is None:
       
@@ -28,21 +29,16 @@ class QAChainConversational:
         prompt = PromptTemplate(input_variables=['context', 'chat_history', 'question'], template=PROMPT)
         
         # build chain
-        print('[chain] building conversational retrieval chain')
+        print(f'[chain] building conversational retrieval chain of type {chain_type}')
         chain = ConversationalRetrievalChain.from_llm(
           llm=llm,
-          chain_type='map_reduce',
+          chain_type=chain_type,
           retriever=retriever,
           memory=memory,
           return_source_documents=True,
           #combine_docs_chain_kwargs={ 'prompt': prompt },
         )
-        utils.dumpj({
-          'generator': chain.question_generator.prompt.template,
-          'collapse': chain.combine_docs_chain.collapse_document_chain.llm_chain.prompt.template,
-          'combine': chain.combine_docs_chain.combine_document_chain.llm_chain.prompt.template,
-          'llm': chain.combine_docs_chain.llm_chain.prompt.template,
-        }, 'chain_templates.json')
+        ChainBase.dump_chain_prompts(chain)
         QAChainConversational.chain = chain
 
       # done

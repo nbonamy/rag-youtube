@@ -5,9 +5,9 @@ import html
 import utils
 import config
 import requests
-from chain_base import QAChainBase
-from chain_base_source import QAChainBaseWithSources
-from chain_conversation import QAChainConversational
+from chain_qa_base import QAChainBase
+from chain_qa_sources import QAChainBaseWithSources
+from chain_qa_conversation import QAChainConversational
 from stream_handler import StreamHandler
 
 import langchain
@@ -156,12 +156,13 @@ class Agent:
 
   def __build_qa_chain(self, retriever):
     chain_type = self.config.chain_type()
+    doc_chain_type = self.config.doc_chain_type()
     if chain_type == 'base':
-      return QAChainBase.build(self.ollama, retriever)
+      return QAChainBase.build(self.ollama, retriever, doc_chain_type)
     elif 'source' in chain_type:
-      return QAChainBaseWithSources.build(self.ollama, retriever)
+      return QAChainBaseWithSources.build(self.ollama, retriever, doc_chain_type)
     elif 'conversation' in chain_type:
-      return QAChainConversational.build(self.ollama, retriever, self.memory)
+      return QAChainConversational.build(self.ollama, retriever, self.memory, doc_chain_type)
     else:
       raise Exception(f'Chain type "{chain_type}" not in base, base_with_sources, conversation')
 
