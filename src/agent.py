@@ -132,7 +132,7 @@ class Agent:
 
     # now query
     print('[agent] retrieving')
-    res = qachain({key: question})
+    res = qachain.invoke({key: question})
 
     # extract sources
     sources = self.__build_sources(res, docs, self.config.max_source_score())
