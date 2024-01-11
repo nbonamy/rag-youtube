@@ -2,6 +2,8 @@
 
 A set of scripts to build a RAG from the videos of a YouTube channel.
 
+This is mainly for learning purposes. Implementation is not multi-user/session compliant.
+
 ## Prerequisites
 
 YouTube Data API: You need a Google Cloud account and a project set up in the Google Developer Console. Enable the YouTube Data API for your project and get an API key.
