@@ -65,7 +65,7 @@ class StreamHandler(BaseCallbackHandler):
     last_run = self.__get_run(self.last_run_id)
     return {
       'runs': self.llm_runs,
-      'text': last_run['text'],
+      'text': '' if last_run['text'] is None else last_run['text'].strip(),
       'sources': self.sources,
       'performance': {
         'total_time': int(self.end - self.start),
