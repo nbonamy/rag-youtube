@@ -126,11 +126,11 @@ class Agent:
     # } for d in docs], 'relevant_documents.json')
 
     # build chain
-    (qachain, key) = self.__build_qa_chain(retriever)
+    chain = self.__build_qa_chain(retriever)
 
     # now query
     print('[agent] retrieving and prompting')
-    res = qachain.invoke({key: question})
+    res = chain.invoke(question)
 
     # extract sources
     sources = self.__build_sources(res, docs, self.config.max_source_score())
@@ -154,13 +154,12 @@ class Agent:
 
   def __build_qa_chain(self, retriever):
     chain_type = self.config.chain_type()
-    doc_chain_type = self.config.doc_chain_type()
     if chain_type == 'base':
-      return QAChainBase.build(self.ollama, retriever, doc_chain_type)
+      return QAChainBase(self.ollama, retriever, self.config)
     elif 'source' in chain_type:
-      return QAChainBaseWithSources.build(self.ollama, retriever, doc_chain_type)
+      return QAChainBaseWithSources(self.ollama, retriever, self.config)
     elif 'conversation' in chain_type:
-      return QAChainConversational.build(self.ollama, retriever, self.memory, doc_chain_type)
+      return QAChainConversational(self.ollama, retriever, self.memory, self.config)
     else:
       raise Exception(f'Chain type "{chain_type}" not in base, base_with_sources, conversation')
 
