@@ -22,11 +22,12 @@ class StreamHandler(BaseCallbackHandler):
       self.start = utils.now()
     self.llm_runs.append({
       'id': kwargs['run_id'].hex,
-      'prompts': prompts[0],
-      'created': utils.now(),
-      'text': None,
-      'end': None,
+      'prompt': prompts[0],
+      'response': None,
       'tokens': 0,
+      'created': utils.now(),
+      'start': None,
+      'end': None,
       'time_1st_token': None,
       'tokens_per_sec': None
     })
@@ -47,26 +48,26 @@ class StreamHandler(BaseCallbackHandler):
     if run is None:
       print(f'[agent] on_llm_new_token called for unknown run id {run_id}')
       return
-    if run['text'] is None:
+    if run['response'] is None:
       run['start'] = utils.now()
-      run['text'] = ''
+      run['response'] = ''
       run['tokens'] = 0
-    run['text'] += token
+    run['response'] += token
     run['tokens'] += 1
     run['end'] = utils.now()
 
   def time_1st_token(self, run) -> int:
-    return None if 'start' not in run else int(run['start'] - run['created'])
+    return None if run['start'] is None else int(run['start'] - run['created'])
 
   def tokens_per_sec(self, run)  -> float:
-    return None if 'start' not in run else round(run['tokens'] / (run['end'] - run['start']) * 1000, 2)
+    return None if run['start'] is None else round(run['tokens'] / (run['end'] - run['start']) * 1000, 2)
 
   def output(self) -> dict:
     last_run = self.__get_run(self.last_run_id)
     return {
-      'runs': self.llm_runs,
-      'text': '' if last_run['text'] is None else last_run['text'].strip(),
+      'text': '' if last_run['response'] is None else last_run['response'].strip(),
       'sources': self.sources,
+      'runs': self.llm_runs,
       'performance': {
         'total_time': int(self.end - self.start),
         'tokens': self.__get_sum_across_runs('tokens'),
