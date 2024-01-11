@@ -2,7 +2,7 @@
 import utils
 from langchain.prompts import PromptTemplate
 
-PROMPT_QUESTION="""HELLO. Use the following pieces of context to answer the question at the end.
+PROMPT_QUESTION="""Use the following pieces of context to answer the question at the end.
 If the question is not directly related to the context, just say that you don't know, don't try to make up an answer. 
 If not enough information is available in the context, just say that you don't know, don't try to make up an answer.
 If you don't know the answer, just say that you don't know, don't try to make up an answer.
@@ -13,7 +13,7 @@ In any case, please do not leverage your own knowledge.
 Question: {question}
 Helpful Answer:"""
 
-PROMPT_COMBINE="""HELLO. Given the following extracted parts of a long document and a question, create a final answer.
+PROMPT_COMBINE="""Given the following extracted parts of a long document and a question, create a final answer.
 If you don't know the answer, just say that you don't know. Don't try to make up an answer.
 
 QUESTION: {question}

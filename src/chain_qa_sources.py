@@ -3,7 +3,7 @@ from chain_base import ChainBase
 from langchain.chains import RetrievalQAWithSourcesChain
 from langchain.prompts import PromptTemplate
 
-PROMPT_QUESTION="""HELLO. Given the following extracted parts of several source documents and a question, create a final answer with references.
+PROMPT_QUESTION="""Given the following extracted parts of several source documents and a question, create a final answer with references.
 If the question is not directly related to the context, just say that you don't know, don't try to make up an answer. 
 If not enough information is available in the context, just say that you don't know, don't try to make up an answer.
 If you don't know the answer, just say that you don't know, don't try to make up an answer.
