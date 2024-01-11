@@ -35,18 +35,18 @@ var vm = new Vue({
     ask() {
       this.isLoading = true
       this.messages.push({ role: 'user', 'text': this.question })
-      this.scollDiscussion()
+      this.scrollDiscussion()
       axios.get(`/ask?question=${this.question}`).then(response => {
         this.question = null
         this.response = response.data
         this.messages.push({ role: 'assistant', 'text': this.response.text, 'sources': this.response.sources })
-        this.scollDiscussion()
+        this.scrollDiscussion()
         this.isLoading = false
       }).catch(_ => {
         this.showError('Error while asking model.')
       })
     },
-    scollDiscussion() {
+    scrollDiscussion() {
       this.$nextTick(() => {
         let discussion = document.getElementsByClassName('discussion')[0]
         discussion.scrollTop = discussion.scrollHeight
