@@ -131,7 +131,7 @@ class Agent:
     (qachain, key) = self.__build_qa_chain(retriever)
 
     # now query
-    print('[agent] retrieving')
+    print('[agent] retrieving and prompting')
     res = qachain.invoke({key: question})
 
     # extract sources
