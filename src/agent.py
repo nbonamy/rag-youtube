@@ -102,7 +102,7 @@ class Agent:
 
     # retriever
     retriever=self.vectorstore.as_retriever(
-      search_type='similarity',
+      search_type=self.config.search_type(),
       search_kwargs={
         'k': self.config.similarity_document_count(),
       }
