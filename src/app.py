@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
 
-import utils
 import consts
-import os.path
 from agent import Agent
 from config import Config
-from bottle import Bottle, request, abort, static_file
+from bottle import Bottle, request, static_file
 
 # we need this as a global so we can use it in the ask endpoint
 summarizer = None

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import os
 import html
 import utils
 import config
@@ -12,7 +11,6 @@ from stream_handler import StreamHandler
 
 import langchain
 from langchain_community.llms import Ollama
-from langchain.schema.document import Document
 from langchain.memory import ConversationBufferMemory
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.embeddings import OpenAIEmbeddings, OllamaEmbeddings, HuggingFaceEmbeddings
@@ -27,7 +25,7 @@ class Agent:
       langchain.debug = True
     self.config = config
     self.__build_embedder()
-    self.stream_handler = StreamHandler()
+    self.stream_handler = StreamHandler(config.chain_type(), config.doc_chain_type())
     self.ollama = Ollama(base_url=config.ollama_url(), model=config.ollama_model(), callbacks=[self.stream_handler])
     self.vectorstore = Chroma(persist_directory=config.db_persist_directory(), embedding_function=self.embeddings)
     self.splitter = RecursiveCharacterTextSplitter(chunk_size=config.split_chunk_size(), chunk_overlap=config.split_chunk_overlap())

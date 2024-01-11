@@ -1,5 +1,4 @@
 
-import utils
 from chain_base import ChainBase
 from langchain.prompts import PromptTemplate
 from langchain.chains import ConversationalRetrievalChain

@@ -71,6 +71,11 @@ body {
 	font-weight: bold;
 }
 
+.message .code {
+	float: right;
+	cursor: pointer;
+}
+
 .message .body {
 	white-space: pre-wrap;
 }
@@ -81,4 +86,8 @@ body {
 
 .message .sources ul {
 	list-style: inside;
+}
+
+.code {
+	white-space: pre-wrap;
 }

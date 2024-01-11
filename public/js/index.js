@@ -7,6 +7,7 @@ var vm = new Vue({
     question: null,
     messages: [ ],
     response: null,
+    jsonCode: null,
     isLoading: false,
   },
   computed: {
@@ -39,7 +40,7 @@ var vm = new Vue({
       axios.get(`/ask?question=${this.question}`).then(response => {
         this.question = null
         this.response = response.data
-        this.messages.push({ role: 'assistant', 'text': this.response.text, 'sources': this.response.sources })
+        this.messages.push({ role: 'assistant', 'text': this.response.text, 'response': this.response })
         this.scrollDiscussion()
         this.isLoading = false
       }).catch(_ => {
@@ -51,6 +52,9 @@ var vm = new Vue({
         let discussion = document.getElementsByClassName('discussion')[0]
         discussion.scrollTop = discussion.scrollHeight
       })
+    },
+    showJson(json) {
+      this.jsonCode = JSON.stringify(json, null, 2)//.replace(/\\n/g, '\n')
     },
     showError(msg) {
       this.isLoading = false

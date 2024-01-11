@@ -37,13 +37,14 @@
 				<section class="reset" @click="reset"><b-icon icon="close-circle-outline" size="is-small"></b-icon> Clear</section>
 				<div class="discussion" ref="discussion">
 					<div class="message" :class="message.role" v-for="message in messages">
+						<div class="code" @click="showJson(message.response)" v-if="message.role == 'assistant'"><b-icon icon="code-braces" size="is-small"></b-icon></div>
 						<div class="avatar"><img :src="message.role == 'user' ? 'img/user.jpg' : channel.snippet.thumbnails.default.url"></div>
 						<div class="header">{{ message.role == 'user' ? 'You' : channel.snippet.title }}</div>
 						<div class="body">{{ message.text }}</div>
-						<div class="sources" v-if="message.sources && message.sources.length > 0">
+						<div class="sources" v-if="message.response?.sources && message.response?.sources.length > 0">
 							Sources:
 							<ul>
-								<li class="source" v-for="source in message.sources">
+								<li class="source" v-for="source in message.response.sources">
 									<a :href="source.url" target="_blank">{{ source.title }}</a>
 								</li>
 							</ul>
@@ -56,6 +57,9 @@
 				</b-field>
 				<span v-if="response">{{ performance }}</span>
 			</section>
+			<b-modal v-model="jsonCode">
+				<pre class="code">{{ jsonCode }}</pre>
+			</b-modal>
 		</main>
 	</div>
 
