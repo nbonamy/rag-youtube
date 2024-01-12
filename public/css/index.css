@@ -4,6 +4,10 @@ body {
 	margin: 0 auto;
 }
 
+.modal-card-title {
+	font-weight: bold;
+}
+
 .chat {
 	padding-top: 0;
 }
@@ -30,8 +34,16 @@ body {
 	text-overflow:ellipsis;
 }
 
+.chat .prompt {
+	display: flex;
+}
+
 .chat input {
-	width: 750px;
+	width: 702px;
+}
+
+.chat button.configure {
+	margin-left: 8px;
 }
 
 .chat .discussion {

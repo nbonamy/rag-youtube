@@ -3,12 +3,15 @@
 var vm = new Vue({
   el: '#app',
   data: {
+    configuration: {},
+    models: [],
     channel: null,
     question: null,
     messages: [ ],
     response: null,
     jsonCode: null,
     isLoading: false,
+    configuring: false,
   },
   computed: {
     performance() {
@@ -37,7 +40,8 @@ var vm = new Vue({
       this.isLoading = true
       this.messages.push({ role: 'user', 'text': this.question })
       this.scrollDiscussion()
-      axios.get(`/ask?question=${this.question}`).then(response => {
+      parameters = Object.entries(this.configuration).map(([key, value]) => `${key}=${value}`).join('&')
+      axios.get(`/ask?question=${this.question}&${parameters}`).then(response => {
         this.question = null
         this.response = response.data
         this.messages.push({ role: 'assistant', 'text': this.response.text, 'response': this.response })
@@ -69,6 +73,16 @@ var vm = new Vue({
     }
   },
   mounted() {
+    axios.get('/config').then(response => {
+      this.configuration = response.data.configuration
+    }).catch(_ => {
+      this.showError('Error while getting configuration.')
+    })
+    axios.get('/models').then(response => {
+      this.models = response.data.models
+    }).catch(_ => {
+      this.showError('Error while getting models information.')
+    })
     axios.get('/info').then(response => {
       this.channel = response.data
     }).catch(_ => {

@@ -17,6 +17,20 @@ app.config.update({
 
 agent = Agent(app.config.get('config'))
 
+@app.route('/config')
+def config():
+  config = app.config.get('config')
+  parameters = ChainParameters(config, {})
+  return {
+    'configuration': parameters.to_dict() | {
+      'ollama_model': config.ollama_model()
+    }
+  }
+
+@app.route('/models')
+def models():
+  return agent.list_ollama_models()
+
 @app.route('/info')
 def info():
   return static_file('channel_info.json', root='./')
