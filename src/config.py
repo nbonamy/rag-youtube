@@ -50,12 +50,12 @@ class Config:
   def search_type(self):
     return self.__get_value(CONFIG_SECTION_SEARCH, 'search_type') or consts.DEFAULT_SEARCH_TYPE
 
-  def similarity_document_count(self):
-    return int(self.__get_value(CONFIG_SECTION_SEARCH, 'similarity_document_count') or consts.DEFAULT_SIMILARITY_DOCUMENT_COUNT)
+  def document_count(self):
+    return int(self.__get_value(CONFIG_SECTION_SEARCH, 'document_count') or consts.DEFAULT_DOCUMENT_COUNT)
 
-  def max_source_score(self):
-    return float(self.__get_value(CONFIG_SECTION_SEARCH, 'max_source_score') or consts.DEFAULT_MAX_SOURCE_SCORE)
-  
+  def score_threshold(self):
+    return float(self.__get_value(CONFIG_SECTION_SEARCH, 'score_threshold') or consts.DEFAULT_SCORE_THRESHOLD)
+
   def custom_prompts(self):
     value = self.__get_value(CONFIG_SECTION_SEARCH, 'custom_prompts') or consts.DEFAULT_CUSTOM_PROMPTS
     return utils.is_true(value)

@@ -2,8 +2,6 @@
 
 A set of scripts to build a RAG from the videos of a YouTube channel.
 
-This is mainly for learning purposes. Implementation is not multi-user/session compliant.
-
 ## Prerequisites
 
 YouTube Data API: You need a Google Cloud account and a project set up in the Google Developer Console. Enable the YouTube Data API for your project and get an API key.
@@ -75,7 +73,7 @@ For the embeddings model, default is to use a [HuggingFace Sentence Transformers
 For enumerated options, acceptables values are:
 - `chain_type`: `base`, `sources`, `conversation`
 - `doc_chain_type`: `stuff`, `map_reduce`. `refine` and `map_rerank` have not been tested
-- `search_type`: `similarity`, `mmr`
+- `search_type`: `similarity`, `similarity_score_threshold`, `mmr`
 
 ## Debugging
 

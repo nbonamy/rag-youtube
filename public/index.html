@@ -97,11 +97,15 @@
 							<b-field label="Search Type">
 								<b-select v-model="configuration.search_type" :expanded="true">
 									<option value="similarity">Similarity</option>
+									<option value="similarity_score_threshold">Score Threshold</option>
 									<option value="mmr">MMR</option>
 								</b-select>
 							</b-field>
+							<b-field label="Similarity Threshold">
+								<b-input type="number" min="0" max="1" step="0.01" v-model="configuration.score_threshold"></b-input>
+							</b-field>
 							<b-field label="Documents Count">
-								<b-numberinput controls-alignment="right" v-model="configuration.document_count" min="1"></b-numberinput>
+								<b-input type="number" v-model="configuration.document_count" min="1"></b-input>
 							</b-field>
 							<b-field>
 								<b-checkbox v-model="configuration.custom_prompts">Use Custom Prompts</b-checkbox>

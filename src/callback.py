@@ -3,7 +3,7 @@ import utils
 from uuid import UUID
 from langchain.callbacks.base import BaseCallbackHandler
 
-class StreamHandler(BaseCallbackHandler):
+class CallbackHandler(BaseCallbackHandler):
   def __init__(self, chain_type, doc_chain_type):
     self.reset()
     self.chain_type = chain_type
@@ -57,6 +57,12 @@ class StreamHandler(BaseCallbackHandler):
     run['response'] += token
     run['tokens'] += 1
     run['end'] = utils.now()
+
+  def on_retriever_start(self, **kwargs) -> None:
+    print(f'[agent] retriever starting')
+
+  def on_retriever_end(self, **kwargs) -> None:
+    print(f'[agent] retriever ending')
 
   def time_1st_token(self, run) -> int:
     return None if run['start'] is None else int(run['start'] - run['created'])

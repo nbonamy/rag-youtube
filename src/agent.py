@@ -8,7 +8,7 @@ from chain_base import ChainParameters
 from chain_qa_base import QAChainBase
 from chain_qa_sources import QAChainBaseWithSources
 from chain_qa_conversation import QAChainConversational
-from stream_handler import StreamHandler
+from callback import CallbackHandler
 
 import langchain
 from langchain_community.llms import Ollama
@@ -26,7 +26,6 @@ class Agent:
       langchain.debug = True
     self.config = config
     self.__build_embedder()
-    self.stream_handler = StreamHandler(config.chain_type(), config.doc_chain_type())
     self.vectorstore = Chroma(persist_directory=config.db_persist_directory(), embedding_function=self.embeddings)
     self.splitter = RecursiveCharacterTextSplitter(chunk_size=config.split_chunk_size(), chunk_overlap=config.split_chunk_overlap())
     self.memory = ConversationBufferMemory(memory_key='chat_history', max_len=50, return_messages=True, output_key='answer')
@@ -100,13 +99,13 @@ class Agent:
     # parse params
     parameters = ChainParameters(self.config, overrides)
 
-    # reset
-    self.stream_handler.reset()
-
     # retriever
+    search_kwargs={ 'k': parameters.document_count }
+    if parameters.search_type == 'similarity_score_threshold':
+      search_kwargs['score_threshold'] = parameters.score_threshold 
     retriever=self.vectorstore.as_retriever(
       search_type=parameters.search_type,
-      search_kwargs={ 'k': parameters.document_count }
+      search_kwargs=search_kwargs
     )
     print(f'[agent] retriever: {retriever.search_type}, {retriever.search_kwargs}')
     
@@ -126,9 +125,12 @@ class Agent:
     #   'source': d.metadata['source']
     # } for d in docs], 'relevant_documents.json')
 
+    # callback handler
+    callback_handler = CallbackHandler(parameters.chain_type, parameters.doc_chain_type)
+
     # build chain
     ollama_model = overrides['ollama_model'] if 'ollama_model' in overrides else self.config.ollama_model()
-    ollama = Ollama(base_url=self.config.ollama_url(), model=ollama_model, callbacks=[self.stream_handler])
+    ollama = Ollama(base_url=self.config.ollama_url(), model=ollama_model, callbacks=[callback_handler])
     chain = self.__build_qa_chain(ollama, retriever, parameters)
 
     # now query
@@ -136,11 +138,11 @@ class Agent:
     res = chain.invoke(question)
 
     # extract sources
-    sources = self.__build_sources(res, docs, self.config.max_source_score())
-    self.stream_handler.set_sources(sources)
+    sources = self.__build_sources(res, docs)
+    callback_handler.set_sources(sources)
 
     # done
-    return self.stream_handler.output()
+    return callback_handler.output()
 
   def __build_embedder(self):
     model = self.config.embeddings_model()
@@ -165,7 +167,7 @@ class Agent:
     else:
       raise Exception(f'Chain type "{parameters.chain_type}" not in base, base_with_sources, conversation')
 
-  def __build_sources(self, result, docs, max_score) -> list:
+  def __build_sources(self, result, docs) -> list:
 
     # we need to do it in diffrerent ways depending on the chain type
     # but also beccause RetrievalQAWithSourcesChain does not seem to be
@@ -204,4 +206,4 @@ class Agent:
               sources[video_id]['score'] = score
             break
 
-    return list(filter(lambda source: 'score' not in source or max_score == 0.0 or source['score'] < max_score, sources.values()))
+    return list(sources.values())

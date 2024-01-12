@@ -3,18 +3,22 @@ import utils
 from langchain.prompts import PromptTemplate
 
 PROMPT_QUESTION="""Use the following pieces of context to answer the question at the end.
-If the question is not directly related to the context, just say that you don't know, don't try to make up an answer. 
-If not enough information is available in the context, just say that you don't know, don't try to make up an answer.
-If you don't know the answer, just say that you don't know, don't try to make up an answer.
+If the context is empty, just say that you there is no specific information available, nothing else.
+If the question is not directly related to the context, just say that you don't know, nothing else. 
+If not enough information is available in the context, just say that you don't know, nothing else.
+If you don't know the answer, just say that you don't know, nothing else.
 In any case, please do not leverage your own knowledge.
 
+CONTEXT:
 {context}
 
-Question: {question}
-Helpful Answer:"""
+QUESTION:
+{question}
+
+ANSWER:"""
 
 PROMPT_COMBINE="""Given the following extracted parts of a long document and a question, create a final answer.
-If you don't know the answer, just say that you don't know. Don't try to make up an answer.
+If you don't know the answer, just say that you don't know, nothing else.
 
 QUESTION: {question}
 =========
@@ -28,7 +32,8 @@ class ChainParameters:
     self.chain_type = overrides['chain_type'] if 'chain_type' in overrides else config.chain_type()
     self.doc_chain_type = overrides['doc_chain_type'] if 'doc_chain_type' in overrides else config.doc_chain_type()
     self.search_type = overrides['search_type'] if 'search_type' in overrides else config.search_type()
-    self.document_count = int(overrides['document_count']) if 'document_count' in overrides else config.similarity_document_count()
+    self.score_threshold = float(overrides['score_threshold']) if 'score_threshold' in overrides else config.score_threshold()
+    self.document_count = int(overrides['document_count']) if 'document_count' in overrides else config.document_count()
     self.custom_prompts = utils.is_true(overrides['custom_prompts']) if 'custom_prompts' in overrides else config.custom_prompts()
     self.return_sources = utils.is_true(overrides['return_sources']) if 'return_sources' in overrides else config.return_sources()
 
@@ -37,8 +42,9 @@ class ChainParameters:
       'chain_type': self.chain_type,
       'doc_chain_type': self.doc_chain_type,
       'search_type': self.search_type,
-      'custom_prompts': self.custom_prompts,
+      'score_threshold': self.score_threshold,
       'document_count': self.document_count,
+      'custom_prompts': self.custom_prompts,
       'return_sources': self.return_sources,
     }
 
@@ -47,7 +53,7 @@ class ChainBase:
   def __init__(self):
     self.chain = None
 
-  def invoke(self, _):
+  def invoke(self, _: str):
     raise NotImplementedError()
   
   def _get_prompt_kwargs(self, parameters: ChainParameters):
