@@ -126,7 +126,7 @@ class Agent:
     # } for d in docs], 'relevant_documents.json')
 
     # callback handler
-    callback_handler = CallbackHandler(parameters.chain_type, parameters.doc_chain_type)
+    callback_handler = CallbackHandler(parameters)
 
     # build chain
     ollama_model = overrides['ollama_model'] if 'ollama_model' in overrides else self.config.ollama_model()
@@ -187,7 +187,10 @@ class Agent:
 
     # now build our sources
     sources = {}
+    relevance_score_fn = self.vectorstore._select_relevance_score_fn()
     for video_id in video_ids:
+
+      # get video info
       if video_id not in sources.keys():
         video_info = utils.get_video_info(video_id)
         if video_info is not None:
@@ -196,10 +199,12 @@ class Agent:
             'url': utils.get_video_url(video_id),
             'title': html.unescape(video_info['snippet']['title'])
           }
+
+      # now get score
       if video_id in sources.keys() and docs is not None:
         for doc in docs:
           if doc[0].metadata['source'] == video_id:
-            score = doc[1]
+            score = relevance_score_fn(doc[1])
             if 'score' in sources[video_id].keys():
               sources[video_id]['score'] = min(sources[video_id]['score'], score)
             else:

@@ -4,10 +4,9 @@ from uuid import UUID
 from langchain.callbacks.base import BaseCallbackHandler
 
 class CallbackHandler(BaseCallbackHandler):
-  def __init__(self, chain_type, doc_chain_type):
+  def __init__(self, parameters):
     self.reset()
-    self.chain_type = chain_type
-    self.doc_chain_type = doc_chain_type
+    self.parameters = parameters
 
   def reset(self):
     self.llm_runs = []
@@ -73,11 +72,10 @@ class CallbackHandler(BaseCallbackHandler):
   def output(self) -> dict:
     last_run = self.__get_run(self.last_run_id)
     return {
-      'chain_type': self.chain_type,
-      'doc_chain_type': self.doc_chain_type,
       'text': '' if last_run['response'] is None else last_run['response'].strip(),
       'sources': self.sources,
       'runs': self.llm_runs,
+      'parameters': self.parameters.to_dict(),
       'performance': {
         'total_time': int(self.end - self.start),
         'tokens': self.__get_sum_across_runs('tokens'),
