@@ -4,6 +4,7 @@ import html
 import utils
 import config
 import requests
+from chain_base import ChainParameters
 from chain_qa_base import QAChainBase
 from chain_qa_sources import QAChainBaseWithSources
 from chain_qa_conversation import QAChainConversational
@@ -26,7 +27,6 @@ class Agent:
     self.config = config
     self.__build_embedder()
     self.stream_handler = StreamHandler(config.chain_type(), config.doc_chain_type())
-    self.ollama = Ollama(base_url=config.ollama_url(), model=config.ollama_model(), callbacks=[self.stream_handler])
     self.vectorstore = Chroma(persist_directory=config.db_persist_directory(), embedding_function=self.embeddings)
     self.splitter = RecursiveCharacterTextSplitter(chunk_size=config.split_chunk_size(), chunk_overlap=config.split_chunk_overlap())
     self.memory = ConversationBufferMemory(memory_key='chat_history', max_len=50, return_messages=True, output_key='answer')
@@ -92,25 +92,26 @@ class Agent:
     self.vectorstore.persist()
     return
 
-  def query(self, question) -> dict:
+  def query(self, question, overrides) -> dict:
 
     # log
     print(f'[agent] processing {question}')
+
+    # parse params
+    parameters = ChainParameters(self.config, overrides)
 
     # reset
     self.stream_handler.reset()
 
     # retriever
     retriever=self.vectorstore.as_retriever(
-      search_type=self.config.search_type(),
-      search_kwargs={
-        'k': self.config.similarity_document_count(),
-      }
+      search_type=parameters.search_type,
+      search_kwargs={ 'k': parameters.document_count }
     )
     print(f'[agent] retriever: {retriever.search_type}, {retriever.search_kwargs}')
     
     # debug with similarity_search_with_score
-    docs = self.vectorstore.similarity_search_with_score(question, k=self.config.similarity_document_count())
+    docs = self.vectorstore.similarity_search_with_score(question, k=parameters.document_count)
     utils.dumpj([ {
       'content': d[0].page_content,
       'source': d[0].metadata['source'],
@@ -126,10 +127,12 @@ class Agent:
     # } for d in docs], 'relevant_documents.json')
 
     # build chain
-    chain = self.__build_qa_chain(retriever)
+    ollama_model = overrides['ollama_model'] if 'ollama_model' in overrides else self.config.ollama_model()
+    ollama = Ollama(base_url=self.config.ollama_url(), model=ollama_model, callbacks=[self.stream_handler])
+    chain = self.__build_qa_chain(ollama, retriever, parameters)
 
     # now query
-    print('[agent] retrieving and prompting')
+    print(f'[agent] retrieving and prompting using {ollama.model} and {"custom" if parameters.custom_prompts else "default"} prompts')
     res = chain.invoke(question)
 
     # extract sources
@@ -152,16 +155,15 @@ class Agent:
       self.encoder = SentenceTransformer(model)
       self.embeddings = HuggingFaceEmbeddings(model_name=model)
 
-  def __build_qa_chain(self, retriever):
-    chain_type = self.config.chain_type()
-    if chain_type == 'base':
-      return QAChainBase(self.ollama, retriever, self.config)
-    elif 'source' in chain_type:
-      return QAChainBaseWithSources(self.ollama, retriever, self.config)
-    elif 'conversation' in chain_type:
-      return QAChainConversational(self.ollama, retriever, self.memory, self.config)
+  def __build_qa_chain(self, llm, retriever, parameters: ChainParameters):
+    if parameters.chain_type == 'base':
+      return QAChainBase(llm, retriever, parameters)
+    elif 'source' in parameters.chain_type:
+      return QAChainBaseWithSources(llm, retriever, parameters)
+    elif 'conversation' in parameters.chain_type:
+      return QAChainConversational(llm, retriever, self.memory, parameters)
     else:
-      raise Exception(f'Chain type "{chain_type}" not in base, base_with_sources, conversation')
+      raise Exception(f'Chain type "{parameters.chain_type}" not in base, base_with_sources, conversation')
 
   def __build_sources(self, result, docs, max_score) -> list:
 

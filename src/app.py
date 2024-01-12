@@ -4,6 +4,7 @@ import consts
 from agent import Agent
 from config import Config
 from bottle import Bottle, request, static_file
+from chain_base import ChainParameters
 
 # we need this as a global so we can use it in the ask endpoint
 summarizer = None
@@ -43,7 +44,7 @@ def ask():
 
   # do it
   question = request.query.question
-  result = agent.query(question)
+  result = agent.query(question, {k:v[0] for k,v in request.query.dict.items()})
   
   # done
   return result

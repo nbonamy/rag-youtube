@@ -19,3 +19,6 @@ def get_video_url(video_id):
 def dumpj(data, filename):
   with open(filename, 'w') as f:
     f.write(json.dumps(data, indent=2))
+
+def is_true(value: str) -> bool:
+  return value.lower() in ['true', '1', 'y', 'yes', 'on' ]

@@ -1,4 +1,5 @@
 
+import utils
 import consts
 import configparser
 
@@ -18,7 +19,7 @@ class Config:
 
   def debug(self):
     value = self.__get_value(CONFIG_SECTION_GENERAL, 'debug') or consts.DEFAULT_DEBUG
-    return self.__is_bool(value)
+    return utils.is_true(value)
 
   def ollama_url(self):
     return self.__get_value(CONFIG_SECTION_GENERAL, 'ollama_url') or consts.DEFAULT_OLLAMA_URL
@@ -55,19 +56,16 @@ class Config:
   def max_source_score(self):
     return float(self.__get_value(CONFIG_SECTION_SEARCH, 'max_source_score') or consts.DEFAULT_MAX_SOURCE_SCORE)
   
-  def use_custom_prompts(self):
+  def custom_prompts(self):
     value = self.__get_value(CONFIG_SECTION_SEARCH, 'custom_prompts') or consts.DEFAULT_CUSTOM_PROMPTS
-    return self.__is_bool(value)
+    return utils.is_true(value)
 
   def return_sources(self):
     value = self.__get_value(CONFIG_SECTION_SEARCH, 'return_sources') or consts.DEFAULT_RETURN_SOURCES
-    return self.__is_bool(value)
+    return utils.is_true(value)
 
   def __get_value(self, section, option):
     if self.config.has_option(section, option):
       return self.config.get(section, option).strip("'")
     else:
       return None
-
-  def __is_bool(self, value):
-    return value.lower() in ['true', '1', 'y', 'yes', 'on' ]

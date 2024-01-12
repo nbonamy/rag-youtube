@@ -23,6 +23,25 @@ QUESTION: {question}
 
 FINAL ANSWER:"""
 
+class ChainParameters:
+  def __init__(self, config, overrides):
+    self.chain_type = overrides['chain_type'] if 'chain_type' in overrides else config.chain_type()
+    self.doc_chain_type = overrides['doc_chain_type'] if 'doc_chain_type' in overrides else config.doc_chain_type()
+    self.search_type = overrides['search_type'] if 'search_type' in overrides else config.search_type()
+    self.document_count = int(overrides['document_count']) if 'document_count' in overrides else config.similarity_document_count()
+    self.custom_prompts = utils.is_true(overrides['custom_prompts']) if 'custom_prompts' in overrides else config.custom_prompts()
+    self.return_sources = utils.is_true(overrides['return_sources']) if 'return_sources' in overrides else config.return_sources()
+
+  def to_dict(self):
+    return {
+      'chain_type': self.chain_type,
+      'doc_chain_type': self.doc_chain_type,
+      'search_type': self.search_type,
+      'custom_prompts': self.custom_prompts,
+      'document_count': self.document_count,
+      'return_sources': self.return_sources,
+    }
+
 class ChainBase:
 
   def __init__(self):
@@ -31,11 +50,11 @@ class ChainBase:
   def invoke(self, _):
     raise NotImplementedError()
   
-  def _get_prompt_kwargs(self, config):
-    if config.use_custom_prompts():
-      if config.doc_chain_type() == 'stuff':
+  def _get_prompt_kwargs(self, parameters: ChainParameters):
+    if parameters.custom_prompts:
+      if parameters.doc_chain_type == 'stuff':
         return { 'prompt': self._get_question_prompt() }
-      elif config.doc_chain_type() == 'map_reduce':
+      elif parameters.doc_chain_type == 'map_reduce':
         return {
           'question_prompt': self._get_question_prompt(),
           'combine_prompt': self._get_combine_prompt(),

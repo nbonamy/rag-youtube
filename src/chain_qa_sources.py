@@ -1,5 +1,5 @@
 
-from chain_base import ChainBase
+from chain_base import ChainBase, ChainParameters
 from langchain.chains import RetrievalQAWithSourcesChain
 from langchain.prompts import PromptTemplate
 
@@ -20,28 +20,27 @@ FINAL ANSWER:"""
 
 class QAChainBaseWithSources(ChainBase):
 
-  def __init__(self, llm, retriever, config):
+  def __init__(self, llm, retriever, parameters: ChainParameters):
 
     super().__init__()
 
     # build chain
-    chain_type = config.doc_chain_type()
-    print(f'[chain] building retrieval chain with sources of type {chain_type}')
+    print(f'[chain] building retrieval chain with sources of type {parameters.doc_chain_type}')
     self.chain = RetrievalQAWithSourcesChain.from_chain_type(
       llm=llm,
-      chain_type=chain_type,
+      chain_type=parameters.doc_chain_type,
       retriever=retriever,
       #return_source_documents=config.return_sources(),
-      chain_type_kwargs=self._get_prompt_kwargs(config),
+      chain_type_kwargs=self._get_prompt_kwargs(parameters),
     )
     self._dump_chain_prompts()
 
   def invoke(self, prompt):
     return self.chain.invoke({ 'question': prompt })
 
-  def _get_prompt_kwargs(self, config):
-    if not config.use_custom_prompts() or config.doc_chain_type() != 'stuff':
-      return super()._get_prompt_kwargs(config)
+  def _get_prompt_kwargs(self, parameters):
+    if not parameters.custom_prompts or parameters.doc_chain_type != 'stuff':
+      return super()._get_prompt_kwargs(parameters)
   
     prompt = PromptTemplate(input_variables=['summaries', 'question'], template=PROMPT_QUESTION)
     return { 'prompt': prompt }
