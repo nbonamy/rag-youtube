@@ -86,6 +86,7 @@ body {
 .message .code {
 	float: right;
 	cursor: pointer;
+	margin-right: 4px;
 }
 
 .message .body {
