@@ -85,7 +85,7 @@ class StreamHandler(BaseCallbackHandler):
 
   def __get_avg_across_runs(self, key: str) -> any:
     values = self.__get_not_none_across_runs(key)
-    return sum(value for value in values) / len(values)
+    return round(sum(value for value in values) / len(values), 2)
 
   def __get_not_none_across_runs(self, key: str) -> list:
     return [run[key] for run in self.llm_runs if run[key] is not None]
