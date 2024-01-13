@@ -10,6 +10,7 @@ var vm = new Vue({
     messages: [ ],
     response: null,
     jsonCode: null,
+    historyIndex: 0,
     isLoading: false,
     configuring: false,
   },
@@ -24,7 +25,15 @@ var vm = new Vue({
   },
   methods: {
     onkey(event) {
-      if (event.keyCode == 13) {
+      if (event.keyCode == 38 || event.keyCode == 40) {
+        let maxIndex = this.messages.length / 2
+        this.historyIndex = Math.max(0, Math.min(maxIndex, this.historyIndex + (39 - event.keyCode)))
+        if (this.historyIndex == 0) {
+          this.question = null
+        } else {
+          this.question = this.messages[this.messages.length - 2 * this.historyIndex].text
+        }
+      } else if (event.keyCode == 13) {
         this.ask()
       }
     },
@@ -34,6 +43,7 @@ var vm = new Vue({
         this.messages = [ ]
         this.response = null
         this.isLoading = false
+        this.historyIndex = 0
       }).catch(_ => {
         this.isLoading = false
         this.showError('Error while resetting model.')
@@ -41,6 +51,7 @@ var vm = new Vue({
     },
     ask() {
       this.isLoading = true
+      this.historyIndex = 0
       this.messages.push({ role: 'user', 'text': this.question })
       this.scrollDiscussion()
       parameters = Object.entries(this.configuration).map(([key, value]) => `${key}=${value}`).join('&')
@@ -52,6 +63,7 @@ var vm = new Vue({
         this.isLoading = false
       }).catch(_ => {
         this.showError('Error while asking model.')
+        this.messages.pop()
       })
     },
     scrollDiscussion() {
