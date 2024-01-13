@@ -24,8 +24,9 @@ class QAChainBaseWithSources(ChainBase):
 
   def __init__(self, llm, retriever, callback, parameters: ChainParameters):
 
-    super().__init__()
-
+    # save callback
+    self.callback = callback
+    
     # build chain
     print(f'[chain] building retrieval chain with sources of type {parameters.doc_chain_type}')
     self.chain = RetrievalQAWithSourcesChain.from_chain_type(
@@ -36,9 +37,6 @@ class QAChainBaseWithSources(ChainBase):
       chain_type_kwargs=self._get_prompt_kwargs(parameters),
     )
     self._dump_chain_prompts()
-
-  def invoke(self, prompt):
-    return self.chain.invoke({ 'question': prompt })
 
   def _get_prompt_kwargs(self, parameters):
     if not parameters.custom_prompts or parameters.doc_chain_type != 'stuff':

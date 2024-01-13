@@ -4,8 +4,11 @@ from langchain.chains import ConversationalRetrievalChain
 
 class QAChainConversational(ChainBase):
   
-  def __init__(self, llm, retriever, callback, memory, parameters: ChainParameters):
+  def __init__(self, llm, retriever, memory, callback, parameters: ChainParameters):
   
+    # save callback
+    self.callback = callback
+    
     # build chain
     print(f'[chain] building conversational retrieval chain of type {parameters.doc_chain_type}')
     self.chain = ConversationalRetrievalChain.from_llm(
@@ -17,6 +20,3 @@ class QAChainConversational(ChainBase):
       combine_docs_chain_kwargs=self._get_prompt_kwargs(parameters),
     )
     self._dump_chain_prompts()
-
-  def invoke(self, prompt):
-    return self.chain.invoke({ 'question': prompt })
