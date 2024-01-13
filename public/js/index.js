@@ -7,7 +7,7 @@ var vm = new Vue({
     models: [],
     channel: null,
     question: null,
-    messages: [ ],
+    messages: [],
     response: null,
     jsonCode: null,
     historyIndex: 0,
@@ -31,7 +31,12 @@ var vm = new Vue({
         if (this.historyIndex == 0) {
           this.question = null
         } else {
+          event.preventDefault()
           this.question = this.messages[this.messages.length - 2 * this.historyIndex].text
+          this.$nextTick(() => {
+            let prompt = this.$refs.prompt.getElement()
+            prompt.setSelectionRange(prompt.value.length, prompt.value.length);
+          })
         }
       } else if (event.keyCode == 13) {
         this.ask()
