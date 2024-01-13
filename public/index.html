@@ -54,7 +54,7 @@
 				<div class="prompt">
 					<b-field>
 						<b-input v-model="question" placeholder="Ask any question!" @keydown.native="onkey"></b-input>
-						<p class="control"><b-button type="is-info" label="Ask" @click="ask"/></p>
+						<p class="control"><b-button type="is-info" label="Ask" :disabled="!has_question" @click="ask"/></p>
 					</b-field>
 					<b-button class="configure" @click="configuring=true">
 						<b-icon icon="cog" size="is-small"></b-icon>

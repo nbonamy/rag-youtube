@@ -14,6 +14,9 @@ var vm = new Vue({
     configuring: false,
   },
   computed: {
+    has_question() {
+      return this.question != null && this.question.trim().length > 0
+    },
     performance() {
       let perf = this.response?.performance
       return `Total time: ${perf?.total_time} ms / Tokens: ${perf?.tokens} / Time to 1st token: ${perf?.time_1st_token} ms / Tokens per sec: ${perf?.tokens_per_sec}`
