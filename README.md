@@ -2,6 +2,17 @@
 
 A set of scripts to build a RAG from the videos of a YouTube channel.
 
+This has evolved in being a playground to explore RAG applications. Notably:
+- Retrieval and generation parameters can be changed for each question
+- Processing information is added to response payload and can be visualized
+- A number of files are dumped during processing with even more information (json format)
+
+## Screenshots
+
+<center>
+<img src="doc/configuration.png" height="300"/>
+</center>
+
 ## Prerequisites
 
 YouTube Data API: You need a Google Cloud account and a project set up in the Google Developer Console. Enable the YouTube Data API for your project and get an API key.
