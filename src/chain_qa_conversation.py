@@ -4,7 +4,7 @@ from langchain.chains import ConversationalRetrievalChain
 
 class QAChainConversational(ChainBase):
   
-  def __init__(self, llm, retriever, memory, parameters: ChainParameters):
+  def __init__(self, llm, retriever, callback, memory, parameters: ChainParameters):
   
     # build chain
     print(f'[chain] building conversational retrieval chain of type {parameters.doc_chain_type}')

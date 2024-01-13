@@ -12,7 +12,8 @@ var vm = new Vue({
     jsonCode: null,
     historyIndex: 0,
     isLoading: false,
-    configuring: false,
+    isConfiguring: false,
+    isShowingCode: false,
   },
   computed: {
     has_question() {
@@ -79,6 +80,7 @@ var vm = new Vue({
     },
     showJson(json) {
       this.jsonCode = JSON.stringify(json, null, 2)//.replace(/\\n/g, '\n')
+      this.isShowingCode = true
     },
     showError(msg) {
       this.isLoading = false

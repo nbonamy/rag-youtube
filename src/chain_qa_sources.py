@@ -22,7 +22,7 @@ FINAL ANSWER:"""
 
 class QAChainBaseWithSources(ChainBase):
 
-  def __init__(self, llm, retriever, parameters: ChainParameters):
+  def __init__(self, llm, retriever, callback, parameters: ChainParameters):
 
     super().__init__()
 

@@ -56,7 +56,7 @@
 						<b-input ref="prompt" v-model="question" placeholder="Ask any question!" @keydown.native="onkey"></b-input>
 						<p class="control"><b-button type="is-info" label="Ask" :disabled="!has_question" @click="ask"/></p>
 					</b-field>
-					<b-button class="configure" @click="configuring=true">
+					<b-button class="configure" @click="isConfiguring=true">
 						<b-icon icon="cog" size="is-small"></b-icon>
 					</b-button>
 				</div>
@@ -64,10 +64,10 @@
 					<span v-if="response">{{ performance }}</span>
 				</div>
 			</section>
-			<b-modal v-model="jsonCode">
+			<b-modal v-model="isShowingCode">
 				<pre class="code">{{ jsonCode }}</pre>
 			</b-modal>
-			<b-modal v-model="configuring">
+			<b-modal v-model="isConfiguring">
 				<form action="">
 					<div class="modal-card" style="width: 600px; margin: 0 auto;">
 						<header class="modal-card-head"><p class="modal-card-title">Configuration</p></header>
@@ -115,7 +115,7 @@
 							</b-field>
 						</section>
 						<footer class="modal-card-foot">
-							<b-button label="Close" @click="configuring=false" />
+							<b-button label="Close" @click="isConfiguring=false" />
 						</footer>
 					</div>
 				</form>

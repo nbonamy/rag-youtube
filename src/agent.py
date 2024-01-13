@@ -130,8 +130,8 @@ class Agent:
 
     # build chain
     ollama_model = overrides['ollama_model'] if 'ollama_model' in overrides else self.config.ollama_model()
-    ollama = Ollama(base_url=self.config.ollama_url(), model=ollama_model, callbacks=[callback_handler])
-    chain = self.__build_qa_chain(ollama, retriever, parameters)
+    ollama = Ollama(base_url=self.config.ollama_url(), model=ollama_model)
+    chain = self.__build_qa_chain(ollama, retriever, callback_handler, parameters)
 
     # now query
     print(f'[agent] retrieving and prompting using {ollama.model} and {"custom" if parameters.custom_prompts else "default"} prompts')
@@ -157,13 +157,13 @@ class Agent:
       self.encoder = SentenceTransformer(model)
       self.embeddings = HuggingFaceEmbeddings(model_name=model)
 
-  def __build_qa_chain(self, llm, retriever, parameters: ChainParameters):
+  def __build_qa_chain(self, llm, retriever, callback, parameters: ChainParameters):
     if parameters.chain_type == 'base':
-      return QAChainBase(llm, retriever, parameters)
+      return QAChainBase(llm, retriever, callback, parameters)
     elif 'source' in parameters.chain_type:
-      return QAChainBaseWithSources(llm, retriever, parameters)
+      return QAChainBaseWithSources(llm, retriever, callback, parameters)
     elif 'conversation' in parameters.chain_type:
-      return QAChainConversational(llm, retriever, self.memory, parameters)
+      return QAChainConversational(llm, retriever, self.memory, callback, parameters)
     else:
       raise Exception(f'Chain type "{parameters.chain_type}" not in base, base_with_sources, conversation')
 

@@ -5,11 +5,13 @@ from langchain.callbacks.base import BaseCallbackHandler
 
 class CallbackHandler(BaseCallbackHandler):
   def __init__(self, parameters):
+    super().__init__()
     self.reset()
     self.parameters = parameters
 
   def reset(self):
     self.llm_runs = []
+    self.retriever_runs = []
     self.start = None
     self.end = None
     self.last_run_id = None
@@ -17,12 +19,13 @@ class CallbackHandler(BaseCallbackHandler):
   def set_sources(self, sources: list) -> None:
     self.sources = sources
 
-  def on_llm_start(self, serialized: dict, prompts: list, **kwargs) -> None:
+  def on_llm_start(self, serialized: dict, prompts: list, run_id: UUID, parent_run_id: UUID, **kwargs) -> None:
     print(f'[agent] llm starting ("{prompts[0][0:64]}...")')
     if self.start is None:
       self.start = utils.now()
     self.llm_runs.append({
-      'id': kwargs['run_id'].hex,
+      'id': run_id.hex,
+      'parent_id': parent_run_id.hex,
       'prompt': prompts[0],
       'response': None,
       'tokens': 0,
@@ -33,19 +36,8 @@ class CallbackHandler(BaseCallbackHandler):
       'tokens_per_sec': None
     })
 
-  def on_llm_end(self, response: dict, **kwargs) -> None:
-    self.end = utils.now()
-    self.last_run_id = kwargs['run_id']
-    run = self.__get_run(kwargs['run_id'])
-    if run is None:
-      print(f'[agent] on_llm_end called for unknown run id {run_id}')
-      return
-    run['end'] = utils.now()
-    run['time_1st_token'] = self.time_1st_token(run)
-    run['tokens_per_sec'] = self.tokens_per_sec(run)
-  
-  def on_llm_new_token(self, token: str, **kwargs) -> None:
-    run = self.__get_run(kwargs['run_id'])
+  def on_llm_new_token(self, token: str, run_id: UUID, parent_run_id: UUID, **kwargs) -> None:
+    run = self.__get_llm_run(run_id)
     if run is None:
       print(f'[agent] on_llm_new_token called for unknown run id {run_id}')
       return
@@ -57,24 +49,45 @@ class CallbackHandler(BaseCallbackHandler):
     run['tokens'] += 1
     run['end'] = utils.now()
 
-  def on_retriever_start(self, **kwargs) -> None:
-    print(f'[agent] retriever starting')
+  def on_llm_end(self, response: dict, run_id: UUID, **kwargs) -> None:
+    self.end = utils.now()
+    self.last_run_id = run_id
+    run = self.__get_llm_run(run_id)
+    if run is None:
+      print(f'[agent] on_llm_end called for unknown run id {run_id}')
+      return
+    run['end'] = utils.now()
+    run['time_1st_token'] = self.__time_1st_token(run)
+    run['tokens_per_sec'] = self.__tokens_per_sec(run)
+  
+  def on_retriever_start(self, serialized: dict, query: str, run_id: UUID, parent_run_id: UUID, **kwargs) -> None:
+    print(f'[agent] retriever starting ("{query[0:64]}...")')
+    self.retriever_runs.append({
+      'id': run_id.hex,
+      'parent_id': parent_run_id.hex,
+      'query': query,
+      'documents': None,
+      'created': utils.now(),
+      'start': utils.now(),
+      'end': None,
+    })
 
-  def on_retriever_end(self, **kwargs) -> None:
-    print(f'[agent] retriever ending')
-
-  def time_1st_token(self, run) -> int:
-    return None if run['start'] is None else int(run['start'] - run['created'])
-
-  def tokens_per_sec(self, run)  -> float:
-    return None if run['start'] is None else round(run['tokens'] / (run['end'] - run['start']) * 1000, 2)
+  def on_retriever_end(self, documents: any, run_id: UUID, **kwargs) -> None:
+    run = self.__get_retriever_run(run_id)
+    if run is None:
+      print(f'[agent] on_retriever_end called for unknown run id {run_id}')
+      return
+    #run.documents = documents
+    run['end'] = utils.now()
+    run['duration'] = run['end'] - run['start']
 
   def output(self) -> dict:
-    last_run = self.__get_run(self.last_run_id)
+    last_run = self.__get_llm_run(self.last_run_id)
     return {
       'text': '' if last_run['response'] is None else last_run['response'].strip(),
       'sources': self.sources,
-      'runs': self.llm_runs,
+      'llm_runs': self.llm_runs,
+      'retreiver_runs': self.retriever_runs,
       'parameters': self.parameters.to_dict(),
       'performance': {
         'total_time': int(self.end - self.start),
@@ -83,6 +96,12 @@ class CallbackHandler(BaseCallbackHandler):
         'tokens_per_sec': self.__get_avg_across_runs('tokens_per_sec'),
       }
     }
+
+  def __time_1st_token(self, run) -> int:
+    return None if run['start'] is None else int(run['start'] - run['created'])
+
+  def __tokens_per_sec(self, run)  -> float:
+    return None if run['start'] is None else round(run['tokens'] / (run['end'] - run['start']) * 1000, 2)
 
   def __get_sum_across_runs(self, key: str) -> any:
     return sum(value for value in self.__get_not_none_across_runs(key))
@@ -94,8 +113,14 @@ class CallbackHandler(BaseCallbackHandler):
   def __get_not_none_across_runs(self, key: str) -> list:
     return [run[key] for run in self.llm_runs if run[key] is not None]
 
-  def __get_run(self, id: UUID) -> dict:
+  def __get_llm_run(self, id: UUID) -> dict:
     for run in self.llm_runs:
+      if run['id'] == id.hex:
+        return run
+    return None
+
+  def __get_retriever_run(self, id: UUID) -> dict:
+    for run in self.retriever_runs:
       if run['id'] == id.hex:
         return run
     return None

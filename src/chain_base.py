@@ -1,6 +1,7 @@
 
 import utils
 from langchain.prompts import PromptTemplate
+from langchain_core.runnables import RunnableConfig
 
 PROMPT_QUESTION="""Use the following pieces of context to answer the question at the end.
 If the context is empty, just say that you there is no specific information available, nothing else.
@@ -52,9 +53,16 @@ class ChainBase:
 
   def __init__(self):
     self.chain = None
+    self.callback = None
 
-  def invoke(self, _: str):
-    raise NotImplementedError()
+  def invoke(self, prompt: str):
+    return self.chain.invoke(
+      input={ self._get_input_key(): prompt },
+      config=RunnableConfig(callbacks=[self.callback])
+    )
+
+  def _get_input_key(self):
+    return 'question'
   
   def _get_prompt_kwargs(self, parameters: ChainParameters):
     if parameters.custom_prompts:
@@ -65,7 +73,7 @@ class ChainBase:
           'question_prompt': self._get_question_prompt(),
           'combine_prompt': self._get_combine_prompt(),
         }
-    return None
+    return {}
   
   def _get_question_prompt(self):
     return PromptTemplate(input_variables=['context', 'question'], template=PROMPT_QUESTION)
