@@ -1,7 +1,65 @@
 
+import re
 import utils
 from uuid import UUID
 from langchain.callbacks.base import BaseCallbackHandler
+
+class ChainStep:
+
+  def __init__(self, id: UUID, type: str, serialized: dict, auto_start:bool=True, **kwargs):
+    self.id = id
+    self.type = type
+    self.repr = self.__get_repr(serialized)
+    self.args = kwargs or {}
+    self.created_at = utils.now()
+    self.started_at = self.created_at if auto_start else None
+    self.ended_at = None
+    self.elapsed = None
+    self.steps = []
+
+  def start(self):
+    self.started_at = utils.now()
+
+  def end(self):
+    self.ended_at = utils.now()
+    self.elapsed = self.ended_at - self.created_at
+
+  def add_step(self, step):
+    self.steps.append(step)
+
+  def to_dict(self):
+    return {
+      'id': self.id.hex,
+      'type': self.type,
+      'repr': self.repr,
+      'created_at': self.created_at,
+      'started_at': self.started_at,
+      'ended_at': self.ended_at,
+      'elapsed': self.elapsed,
+      'steps': [step.to_dict() for step in self.steps],
+    } | self.args
+
+  def __getitem__(self, x):
+    return self.args[x] if x in self.args else None
+  
+  def __setitem__(self, x, value):
+    self.args[x] = value
+
+  def __get_repr(self, serialized: dict) -> str:
+    repr = self.__find_attr(serialized, 'repr')
+    return None if repr is None else re.sub(r'PromptTemplate\(.*[^\\]\'\)', 'PromptTemplate(...)', repr)
+
+  def __find_attr(self, serialized: dict, key: str) -> str:
+    if key in serialized:
+      return serialized[key]
+    if 'kwargs' in serialized:
+      for kwarg in serialized['kwargs']:
+        if kwarg == key:
+          return serialized['kwargs'][key]
+        value = self.__find_attr(serialized['kwargs'][kwarg], key)
+        if value is not None:
+          return None
+    return None
 
 class CallbackHandler(BaseCallbackHandler):
   def __init__(self, parameters):
@@ -9,134 +67,105 @@ class CallbackHandler(BaseCallbackHandler):
     self.reset()
     self.parameters = parameters
 
-  def __getitem__(self, x):
-    return getattr(self, x)
-
   def reset(self):
-    self.id = None
-    self.runs = []
+    self.root = None
     self.outputs = None
-    self.start = None
-    self.end = None
   
   def set_sources(self, sources: list) -> None:
     self.sources = sources
 
   def on_chain_start(self, serialized: dict, inputs: dict, run_id: UUID, parent_run_id: UUID, **kwargs) -> None:
     if parent_run_id is None:
-      self.id = run_id.hex
-      self.start = utils.now()
+      self.root = ChainStep(run_id, 'chain', serialized)
     else:
-      parent = self.__get_run(parent_run_id)
-      parent['runs'].append({
-        'id': run_id.hex,
-        'type': 'chain',
-        'repr': self.__get_repr(serialized),
-        'start': utils.now(),
-        'end': None,
-        'elapsed': None,
-        'runs': [],
-      })
+      parent = self.__get_step(parent_run_id)
+      parent.add_step(ChainStep(run_id, 'chain', serialized))
 
   def on_chain_end(self, outputs: dict, run_id: UUID, parent_run_id: UUID, **kwargs) -> None:
-    if run_id.hex == self.id:
+    if run_id == self.root.id:
       self.outputs = outputs
-      self.end = utils.now()
+      self.root.end()
     else:
-      run = self.__get_run(run_id)
+      run = self.__get_step(run_id)
       if run is None:
         print(f'[agent] on_chain_end called for unknown run id {run_id}')
         return
-      run['end'] = utils.now()
-      run['elapsed'] = run['end'] - run['start']
+      run.end()
 
   def on_llm_start(self, serialized: dict, prompts: list, run_id: UUID, parent_run_id: UUID, **kwargs) -> None:
     print(f'[agent] llm starting ("{prompts[0][0:64]}...")')
-    parent = self.__get_run(parent_run_id)
-    parent['runs'].append({
-      'id': run_id.hex,
-      'type': 'llm',
-      'repr': self.__get_repr(serialized),
-      'prompt': prompts[0],
-      'response': None,
-      'tokens': 0,
-      'created': utils.now(),
-      'start': None,
-      'end': None,
-      'elapsed': None,
-      'time_1st_token': None,
-      'tokens_per_sec': None,
-      'runs': [],
-    })
+    parent = self.__get_step(parent_run_id)
+    parent.add_step(ChainStep(
+      run_id, 'llm', serialized, auto_start=False,
+      prompt=prompts[0], response=None, tokens=0,
+      time_1st_token=None, tokens_per_sec=None
+    ))
 
   def on_llm_new_token(self, token: str, run_id: UUID, parent_run_id: UUID, **kwargs) -> None:
-    run = self.__get_run(run_id)
+    run = self.__get_step(run_id)
     if run is None:
       print(f'[agent] on_llm_new_token called for unknown run id {run_id}')
       return
     if run['response'] is None:
-      run['start'] = utils.now()
+      run.start()
       run['response'] = ''
-      run['tokens'] = 0
     run['response'] += token
     run['tokens'] += 1
-    run['end'] = utils.now()
 
   def on_llm_end(self, response: dict, run_id: UUID, **kwargs) -> None:
-    run = self.__get_run(run_id)
+    run = self.__get_step(run_id)
     if run is None:
       print(f'[agent] on_llm_end called for unknown run id {run_id}')
       return
-    run['end'] = utils.now()
-    run['elapsed'] = run['end'] - run['start']
+    run.end()
     run['time_1st_token'] = self.__time_1st_token(run)
     run['tokens_per_sec'] = self.__tokens_per_sec(run)
   
   def on_retriever_start(self, serialized: dict, query: str, run_id: UUID, parent_run_id: UUID, **kwargs) -> None:
     print(f'[agent] retriever starting ("{query[0:64]}...")')
-    parent = self.__get_run(parent_run_id)
-    parent['runs'].append({
-      'id': run_id.hex,
-      'type': 'retriever',
-      'repr': self.__get_repr(serialized),
-      'query': query,
-      'documents': None,
-      'created': utils.now(),
-      'start': utils.now(),
-      'end': None,
-      'elapsed': None,
-      'runs': [],
-    })
+    parent = self.__get_step(parent_run_id)
+    parent.add_step(ChainStep(
+      run_id, 'retriever', serialized,
+      query=query, documents=None
+    ))
 
   def on_retriever_end(self, documents: any, run_id: UUID, **kwargs) -> None:
-    run = self.__get_run(run_id)
+    run = self.__get_step(run_id)
     if run is None:
       print(f'[agent] on_retriever_end called for unknown run id {run_id}')
       return
     print(f'[agent] retrieved {len(documents)} relevant documents')
+    run.end()
     run['documents'] = [doc.metadata['source'] for doc in documents]
-    run['end'] = utils.now()
-    run['elapsed'] = run['end'] - run['start']
 
   def output(self) -> dict:
     return {
-      'text': self.outputs['result'].strip() if 'result' in self.outputs else '',
+      'text': self.__final_answer(),
       'sources': self.sources,
-      'runs': self.runs,
+      'runs': self.root.to_dict(),
       'parameters': self.parameters.to_dict(),
       'performance': {
-        'total_time': int(self.end - self.start),
+        'total_time': int(self.root.ended_at - self.root.created_at),
         'tokens': self.__get_sum_across_llm_runs('tokens'),
         'time_1st_token': self.__get_avg_across_llm_runs('time_1st_token'),
         'tokens_per_sec': self.__get_avg_across_llm_runs('tokens_per_sec'),
       }
     }
 
+  def __final_answer(self):
+    if self.outputs is None:
+      return ''
+    if 'result' in self.outputs:
+      return self.outputs['result'].strip()
+    if 'answer' in self.outputs:
+      return self.outputs['answer'].strip()
+    return ''
+  
   def __time_1st_token(self, run) -> int:
-    return None if run['start'] is None else int(run['start'] - run['created'])
+    return None if run.started_at is None else int(run.started_at - run.created_at)
 
   def __tokens_per_sec(self, run)  -> float:
-    return None if run['start'] is None else round(run['tokens'] / (run['end'] - run['start']) * 1000, 2)
+    return None if run.started_at is None else round(run['tokens'] / (run.ended_at - run.started_at) * 1000, 2)
 
   def __get_sum_across_llm_runs(self, key: str) -> any:
     return sum(value for value in self.__get_not_none_across_llm_runs(key))
@@ -148,15 +177,15 @@ class CallbackHandler(BaseCallbackHandler):
   def __get_not_none_across_llm_runs(self, key: str) -> list:
     return [run[key] for run in self.__get_llm_runs() if run[key] is not None]
 
-  def __get_run(self, id: UUID, runs=None) -> dict:
-    if id is None or self.id == id.hex:
-      return self
+  def __get_step(self, id: UUID, runs=None) -> dict:
+    if id is None or self.root.id == id:
+      return self.root
     if runs is None:
-      runs = self.runs
+      runs = self.root.steps
     for run in runs:
-      if run['id'] == id.hex:
+      if run.id == id:
         return run
-      sub_run = self.__get_run(id=id, runs=run['runs'])
+      sub_run = self.__get_step(id=id, runs=run.steps)
       if sub_run is not None:
         return sub_run
     return None
@@ -164,19 +193,9 @@ class CallbackHandler(BaseCallbackHandler):
   def __get_llm_runs(self, runs=None) -> list:
     llm_runs = []
     if runs is None:
-      runs = self.runs
+      runs = self.root.steps
     for run in runs:
-      if run['type'] == 'llm':
+      if run.type == 'llm':
         llm_runs.append(run)
-      llm_runs.extend(self.__get_llm_runs(run['runs']))
+      llm_runs.extend(self.__get_llm_runs(run.steps))
     return llm_runs
-
-  def __get_repr(self, serialized: dict) -> str:
-    if 'repr' in serialized:
-      return serialized['repr']
-    if 'kwargs' in serialized:
-      for kwarg  in serialized['kwargs']:
-        repr = self.__get_repr(serialized['kwargs'][kwarg])
-        if repr is not None:
-          return None
-    return None

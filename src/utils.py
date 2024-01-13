@@ -3,7 +3,7 @@ import time
 import json
 
 def now():
-  return time.time() * 1000
+  return int(time.time() * 1000)
   
 def get_video_info(video_id):
   with open('videos.json') as f:
