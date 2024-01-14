@@ -72,7 +72,7 @@ body {
 	border-radius: 16px;
 }
 
-.message > *:not(.avatar) {
+.message > *:not(.avatar):not(.action) {
 	margin-left: 48px;
 }
 
@@ -83,7 +83,7 @@ body {
 	font-weight: bold;
 }
 
-.message .inspect {
+.message .action {
 	float: right;
 	cursor: pointer;
 	margin-right: 4px;
@@ -170,4 +170,12 @@ body {
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
+}
+
+.evaluation th, .evaluation td {
+	padding: 2px 8px;
+}
+
+.evaluation .criteria {
+	text-align: right;
 }

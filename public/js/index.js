@@ -58,12 +58,19 @@ var vm = new Vue({
       question: null,
       messages: [],
       history: [],
+      historyIndex: 0,
       response: null,
       chain: null,
-      historyIndex: 0,
+      evaluation: null,      
       isLoading: false,
       isConfiguring: false,
       isShowingChain: false,
+      isShowingEval: false,
+      eval_criteria: [
+        'helpful',
+        'detailed',
+        'relevant to software engineering',
+      ],
     }
   },
   computed: {
@@ -133,6 +140,27 @@ var vm = new Vue({
       this.chain.chain.prompt = this.chain.question
       this.chain.chain.response = this.chain.answer
       this.isShowingChain = true
+    },
+    evaluate(response) {
+      this.isLoading = true
+      axios.get(`/eval?text=${response.answer}&criteria=${this.eval_criteria.join(",")}`).then(response => {
+        this.isLoading = false
+        this.showEval(response.data)
+      }).catch(_ => {
+        this.isLoading = false
+        this.showError('Error while evaluating answer.')
+      })
+    },
+    showEval(response) {
+      if (Object.keys(response.evaluation).length > 0) {
+        this.evaluation = response.evaluation
+        this.isShowingEval = true
+      } else {
+        this.$buefy.dialog.alert({
+          title: 'Answer Evaluation',
+          message: response.answer.replace('\n', '<br>'),
+        })
+      }
     },
     showError(msg) {
       this.isLoading = false

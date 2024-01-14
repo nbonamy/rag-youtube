@@ -5,6 +5,7 @@ import utils
 import config
 import requests
 from chain_base import ChainParameters
+from chain_eval import EvalChain
 from chain_qa_base import QAChainBase
 from chain_qa_sources import QAChainBaseWithSources
 from chain_qa_conversation import QAChainConversational
@@ -91,7 +92,7 @@ class Agent:
     self.vectorstore.persist()
     return
 
-  def query(self, question, overrides) -> dict:
+  def query(self, question: str, overrides: dict) -> dict:
 
     # log
     print(f'[agent] processing {question}')
@@ -142,7 +143,51 @@ class Agent:
     callback_handler.set_sources(sources)
 
     # done
-    return callback_handler.output()
+    return callback_handler.to_dict()
+
+  def evaluate(self, text: str, criteria: list, overrides: dict) -> dict:
+
+    # log
+    print(f'[agent] evaluating {text} against {", ".join(criteria)}')
+
+    # parse params
+    parameters = ChainParameters(self.config, overrides)
+
+    # callback handler
+    callback_handler = CallbackHandler(text, parameters)
+
+    # build chain
+    ollama_model = overrides['ollama_model'] if 'ollama_model' in overrides else self.config.ollama_model()
+    ollama = Ollama(base_url=self.config.ollama_url(), model=ollama_model)
+    chain = EvalChain(ollama, criteria, callback_handler, parameters)
+
+    # now query
+    print(f'[agent] evaluating using {ollama.model}')
+    chain.invoke(text)
+
+    # done
+    res = callback_handler.to_dict()
+
+    # process answer
+    res['evaluation'] = {}
+    answer = res['answer']
+    ratings = answer.split('\n')
+    for rating in ratings:
+      try:
+        tokens = rating.split(':')
+        if len(tokens) == 2:
+          criteria_name = tokens[0].strip()
+          rating_value = int(tokens[1].split('(')[0])
+          res['evaluation'][criteria_name] = rating_value
+      except:
+        pass
+
+    # make sure we have all criteria
+    if len(criteria) != len(res['evaluation'].keys()):
+      res['evaluation'] = {}
+    
+    # done
+    return res
 
   def __build_embedder(self):
     model = self.config.embeddings_model()

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import json
 import consts
 from agent import Agent
 from config import Config
@@ -56,10 +57,26 @@ def reset():
 @app.route('/ask')
 def ask():
 
+  # with open('response.json', 'r') as f:
+  #   return json.loads(f.read())
+  
   # do it
   question = request.query.question
-  result = agent.query(question, {k:v[0] for k,v in request.query.dict.items()})
+  overrides = {k:v[0] for k,v in request.query.dict.items()}
+  result = agent.query(question, overrides)
   
+  # done
+  return result
+
+@app.route('/eval')
+def eval():
+
+  # do it
+  text = request.query.text
+  criteria = request.query.criteria.split(',')
+  overrides = {k:v[0] for k,v in request.query.dict.items()}
+  result = agent.evaluate(text, criteria, overrides)
+
   # done
   return result
 

@@ -37,7 +37,8 @@
 				<section class="reset" @click="reset"><b-icon icon="close-circle-outline" size="is-small"></b-icon> Clear</section>
 				<div class="discussion" ref="discussion">
 					<div class="message" :class="message.role" v-for="message in messages">
-						<div class="inspect" @click="showChain(message.response)" v-if="message.role == 'assistant'"><b-icon icon="code-braces" size="is-small"></b-icon></div>
+						<div class="action inspect" @click="showChain(message.response)" v-if="message.role == 'assistant'"><b-icon icon="link-variant" size="is-small"></b-icon></div>
+						<div class="action evaluare" @click="evaluate(message.response)" v-if="message.role == 'assistant'"><b-icon icon="spellcheck" size="is-small"></b-icon></div>
 						<div class="avatar"><img :src="message.role == 'user' ? 'img/user.jpg' : channel.snippet.thumbnails.default.url"></div>
 						<div class="header">{{ message.role == 'user' ? 'You' : channel.snippet.title }}</div>
 						<div class="body">{{ message.text }}</div>
@@ -72,6 +73,24 @@
 					</section>
 					<footer class="modal-card-foot">
 						<b-button label="Close" @click="isShowingChain=false" />
+					</footer>
+				</div>
+			</b-modal>
+			<b-modal v-model="isShowingEval">
+				<div class="modal-card" style="margin: 0 auto;">
+					<header class="modal-card-head"><p class="modal-card-title">Evaluation</p></header>
+					<section class="modal-card-body">
+						<table class="evaluation">
+							<tr v-for="(rating, criteria) in evaluation">
+								<th class="criteria">{{ criteria }}</th>
+								<td class="rating">
+									<b-rate :value="rating" :disabled="true" :show-score="true" :spaced="true"></b-progress>
+								</td>
+							</tr>
+						</table>
+					</section>
+					<footer class="modal-card-foot">
+						<b-button label="Close" @click="isShowingEval=false" />
 					</footer>
 				</div>
 			</b-modal>

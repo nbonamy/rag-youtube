@@ -71,6 +71,7 @@ class CallbackHandler(BaseCallbackHandler):
   def reset(self):
     self.root = None
     self.outputs = None
+    self.sources = None
   
   def set_sources(self, sources: list) -> None:
     self.sources = sources
@@ -139,7 +140,7 @@ class CallbackHandler(BaseCallbackHandler):
     run.end()
     run['documents'] = [doc.metadata for doc in documents]
 
-  def output(self) -> dict:
+  def to_dict(self) -> dict:
     return {
       'question': self.question,
       'answer': self.__final_answer(),
@@ -157,10 +158,14 @@ class CallbackHandler(BaseCallbackHandler):
   def __final_answer(self):
     if self.outputs is None:
       return ''
+    if len(self.outputs.keys()) == 1:
+      return self.outputs[list(self.outputs.keys())[0]].strip()
     if 'result' in self.outputs:
       return self.outputs['result'].strip()
     if 'answer' in self.outputs:
       return self.outputs['answer'].strip()
+    if 'text' in self.outputs:
+      return self.outputs['text'].strip()
     return ''
   
   def __time_1st_token(self, run) -> int:
