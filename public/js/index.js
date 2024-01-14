@@ -57,6 +57,7 @@ var vm = new Vue({
       channel: null,
       question: null,
       messages: [],
+      history: [],
       response: null,
       chain: null,
       historyIndex: 0,
@@ -76,13 +77,12 @@ var vm = new Vue({
   methods: {
     onkey(event) {
       if (event.keyCode == 38 || event.keyCode == 40) {
-        let maxIndex = this.messages.length / 2
-        this.historyIndex = Math.max(0, Math.min(maxIndex, this.historyIndex + (39 - event.keyCode)))
+        this.historyIndex = Math.max(0, Math.min(this.history.length, this.historyIndex + (39 - event.keyCode)))
         if (this.historyIndex == 0) {
           this.question = null
         } else {
           event.preventDefault()
-          this.question = this.messages[this.messages.length - 2 * this.historyIndex].text
+          this.question = this.history[this.history.length - this.historyIndex]
           this.$nextTick(() => {
             let prompt = this.$refs.prompt.getElement()
             prompt.setSelectionRange(prompt.value.length, prompt.value.length);
@@ -95,7 +95,7 @@ var vm = new Vue({
     reset() {
       this.isLoading = true
       axios.get('/reset').then(response => {
-        this.messages = [ ]
+        this.messages = []
         this.response = null
         this.isLoading = false
         this.historyIndex = 0
@@ -111,11 +111,12 @@ var vm = new Vue({
       this.scrollDiscussion()
       parameters = Object.entries(this.configuration).map(([key, value]) => `${key}=${value}`).join('&')
       axios.get(`/ask?question=${this.question}&${parameters}`).then(response => {
-        this.question = null
         this.response = response.data
         this.messages.push({ role: 'assistant', 'text': this.response.answer, 'response': this.response })
-        this.scrollDiscussion()
+        this.history.push(this.question)
+        this.question = null
         this.isLoading = false
+        this.scrollDiscussion()
       }).catch(_ => {
         this.showError('Error while asking model.')
         this.messages.pop()
