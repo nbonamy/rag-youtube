@@ -47,7 +47,7 @@ class ChainStep:
 
   def __get_repr(self, serialized: dict) -> str:
     repr = self.__find_attr(serialized, 'repr')
-    return None if repr is None else re.sub(r'PromptTemplate\(.*[^\\]\'\)', 'PromptTemplate(...)', repr)
+    return None if repr is None else re.sub(r'PromptTemplate\(.*?[^\\]\'\)', 'PromptTemplate(…)', repr)
 
   def __find_attr(self, serialized: dict, key: str) -> str:
     if key in serialized:
