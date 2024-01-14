@@ -126,7 +126,7 @@ class Agent:
     # } for d in docs], 'relevant_documents.json')
 
     # callback handler
-    callback_handler = CallbackHandler(parameters)
+    callback_handler = CallbackHandler(question, parameters)
 
     # build chain
     ollama_model = overrides['ollama_model'] if 'ollama_model' in overrides else self.config.ollama_model()

@@ -1,27 +1,76 @@
 
+// helper
+const formatPerformance = function(performance) {
+  return `Total time: ${performance?.total_time} ms / Tokens: ${performance?.tokens} / Time to 1st token: ${performance?.time_1st_token} ms / Tokens per sec: ${performance?.tokens_per_sec}`
+}
+
+// components
+let Step = {
+  name: 'Step',
+  template: '#step-template',
+  props: [ 'step', 'level' ],
+  data: () => {
+    return {
+      isShowingCode: false,
+      code: null,
+    }
+  },
+  computed: {
+    title() {
+      if (this.step.repr == null) return 'ChainStep'
+      if (this.step.type == 'llm') return this.step.repr
+      return this.step.repr?.split('(')[0]
+    },
+    sources() {
+      return this.step.documents.map((d) => d.source)
+    },
+  },
+  methods: {
+    showCode(obj) {
+      let clone = JSON.parse(JSON.stringify(this.step))
+      delete clone.steps
+      this.code = JSON.stringify(clone, null, 2)
+      this.isShowingCode = true
+    },
+  }
+}
+let Chain = {
+  'name': 'Chain',
+  template: '#chain-template',
+  components: { 'step': Step, },
+  props: [ 'chain' ],
+  computed: {
+    performance() {
+      return formatPerformance(this.chain.performance)
+    }
+  }
+}
+
 // init vue
 var vm = new Vue({
   el: '#app',
-  data: {
-    configuration: {},
-    models: [],
-    channel: null,
-    question: null,
-    messages: [],
-    response: null,
-    jsonCode: null,
-    historyIndex: 0,
-    isLoading: false,
-    isConfiguring: false,
-    isShowingCode: false,
+  components: { Chain },
+  data: () => {
+    return {
+      configuration: {},
+      models: [],
+      channel: null,
+      question: null,
+      messages: [],
+      response: null,
+      chain: null,
+      historyIndex: 0,
+      isLoading: false,
+      isConfiguring: false,
+      isShowingChain: false,
+    }
   },
   computed: {
     has_question() {
       return this.question != null && this.question.trim().length > 0
     },
     performance() {
-      let perf = this.response?.performance
-      return `Total time: ${perf?.total_time} ms / Tokens: ${perf?.tokens} / Time to 1st token: ${perf?.time_1st_token} ms / Tokens per sec: ${perf?.tokens_per_sec}`
+      return formatPerformance(this.response?.performance)
     }
   },
   methods: {
@@ -64,7 +113,7 @@ var vm = new Vue({
       axios.get(`/ask?question=${this.question}&${parameters}`).then(response => {
         this.question = null
         this.response = response.data
-        this.messages.push({ role: 'assistant', 'text': this.response.text, 'response': this.response })
+        this.messages.push({ role: 'assistant', 'text': this.response.answer, 'response': this.response })
         this.scrollDiscussion()
         this.isLoading = false
       }).catch(_ => {
@@ -78,9 +127,11 @@ var vm = new Vue({
         discussion.scrollTop = discussion.scrollHeight
       })
     },
-    showJson(json) {
-      this.jsonCode = JSON.stringify(json, null, 2)//.replace(/\\n/g, '\n')
-      this.isShowingCode = true
+    showChain(response) {
+      this.chain = response
+      this.chain.chain.prompt = this.chain.question
+      this.chain.chain.response = this.chain.answer
+      this.isShowingChain = true
     },
     showError(msg) {
       this.isLoading = false

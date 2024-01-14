@@ -37,7 +37,7 @@
 				<section class="reset" @click="reset"><b-icon icon="close-circle-outline" size="is-small"></b-icon> Clear</section>
 				<div class="discussion" ref="discussion">
 					<div class="message" :class="message.role" v-for="message in messages">
-						<div class="code" @click="showJson(message.response)" v-if="message.role == 'assistant'"><b-icon icon="code-braces" size="is-small"></b-icon></div>
+						<div class="inspect" @click="showChain(message.response)" v-if="message.role == 'assistant'"><b-icon icon="code-braces" size="is-small"></b-icon></div>
 						<div class="avatar"><img :src="message.role == 'user' ? 'img/user.jpg' : channel.snippet.thumbnails.default.url"></div>
 						<div class="header">{{ message.role == 'user' ? 'You' : channel.snippet.title }}</div>
 						<div class="body">{{ message.text }}</div>
@@ -64,8 +64,16 @@
 					<span v-if="response">{{ performance }}</span>
 				</div>
 			</section>
-			<b-modal v-model="isShowingCode">
-				<pre class="code">{{ jsonCode }}</pre>
+			<b-modal v-model="isShowingChain">
+				<div class="modal-card" style="width: 800px; margin: 0 auto;">
+					<header class="modal-card-head"><p class="modal-card-title">Chain</p></header>
+					<section class="modal-card-body" style="min-height: 600px; max-height: 600px; overflow-y: scroll;">
+						<chain :chain="chain" />
+					</section>
+					<footer class="modal-card-foot">
+						<b-button label="Close" @click="isShowingChain=false" />
+					</footer>
+				</div>
 			</b-modal>
 			<b-modal v-model="isConfiguring">
 				<form action="">
@@ -122,6 +130,55 @@
 			</b-modal>
 		</main>
 	</div>
+
+	<script type="text/x-template" id="chain-template">
+		<div class="chain">
+			<step :step="chain.chain" :level="0"></step>
+			<div class="step chain">
+				<div class="header">
+					{{ performance }}
+				</div>
+			</div>
+		</div>
+	</script>
+
+	<script type="text/x-template" id="step-template">
+		<div class="step" :class="step.type" :style="{ 'margin-left': (level==0?0:16) + 'px' }" :data-level="level">
+			<div class="header" @click="showCode(step)">
+				<div class="performance">
+					<div>{{ step.elapsed }} ms</div>
+					<div v-if="step.type == 'llm'">
+						{{ step.tokens }} tok(s)
+					</div>
+				</div>
+				<div class="title">{{ title }}</div>
+				<div v-if="level == 0">
+					<div class="prompt">{{ step.prompt }}</div>
+					<div class="response">{{ step.response }}</div>
+				</div>
+				<div v-if="step.type == 'retriever'">
+					<div class="prompt">{{ step.query }}</div>
+					<div class="sources">{{ sources.join(', ') }}</div>
+				</div>
+				<div v-if="step.type == 'llm'">
+					<div class="prompt">{{ step.prompt }}</div>
+					<div class="response">{{ step.response }}</div>
+				</div>
+			</div>
+			<step :step="step" :level="level+1" :key="step.id" v-for="step in step.steps"></step>
+			<b-modal v-model="isShowingCode">
+				<div class="modal-card" style="width: 800px; margin: 0 auto;">
+					<header class="modal-card-head"><p class="modal-card-title">{{ title }}</p></header>
+					<section class="modal-card-body">
+						<pre style="white-space: pre-wrap;">{{ code }}</pre>
+					</section>
+					<footer class="modal-card-foot">
+						<b-button label="Close" @click="isShowingCode=false" />
+					</footer>
+				</div>
+			</b-modal>
+		</div>
+	</script>
 
 </body>
 

@@ -58,13 +58,14 @@ class ChainStep:
           return serialized['kwargs'][key]
         value = self.__find_attr(serialized['kwargs'][kwarg], key)
         if value is not None:
-          return None
+          return value
     return None
 
 class CallbackHandler(BaseCallbackHandler):
-  def __init__(self, parameters):
+  def __init__(self, question, parameters):
     super().__init__()
     self.reset()
+    self.question = question
     self.parameters = parameters
 
   def reset(self):
@@ -136,13 +137,14 @@ class CallbackHandler(BaseCallbackHandler):
       return
     print(f'[agent] retrieved {len(documents)} relevant documents')
     run.end()
-    run['documents'] = [doc.metadata['source'] for doc in documents]
+    run['documents'] = [doc.metadata for doc in documents]
 
   def output(self) -> dict:
     return {
-      'text': self.__final_answer(),
+      'question': self.question,
+      'answer': self.__final_answer(),
       'sources': self.sources,
-      'runs': self.root.to_dict(),
+      'chain': self.root.to_dict(),
       'parameters': self.parameters.to_dict(),
       'performance': {
         'total_time': int(self.root.ended_at - self.root.created_at),
