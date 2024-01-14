@@ -9,9 +9,9 @@ This has evolved in being a playground to explore RAG applications. Notably:
 
 ## Screenshots
 
-<center>
-<img src="doc/configuration.png" height="300"/>
-</center>
+<span>
+<img src="doc/configuration.png" height="300" style="margin-right: 16px"/><img src="doc/chain.png" height="300"/>
+</span>
 
 ## Prerequisites
 
