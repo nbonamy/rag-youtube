@@ -21,7 +21,7 @@ TEXT:
 
 RATING:"""
 
-class EvalChain(ChainBase):
+class CriteriaEvalChain(ChainBase):
 
   def __init__(self, llm, criteria:list, callback, parameters: ChainParameters):
 

@@ -68,14 +68,23 @@ def ask():
   # done
   return result
 
-@app.route('/eval')
-def eval():
+@app.route('/evaluate/<method>')
+def eval(method):
+
+  # get data
+  answer = request.query.answer
+  overrides = {k:v[0] for k,v in request.query.dict.items()}
 
   # do it
-  text = request.query.text
-  criteria = request.query.criteria.split(',')
-  overrides = {k:v[0] for k,v in request.query.dict.items()}
-  result = agent.evaluate(text, criteria, overrides)
+  if method == 'criteria':
+    criteria = request.query.criteria.split(',')
+    result = agent.evaluate_criteria(answer, criteria, overrides)
+  elif method == 'qa':
+    question = request.query.question
+    reference = request.query.reference
+    result = agent.evaluate_qa(question, answer, reference, overrides)
+  else:
+    raise Exception(f'Unknown evaluation method {method}')
 
   # done
   return result

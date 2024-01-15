@@ -37,9 +37,9 @@
 				<section class="reset" @click="reset"><b-icon icon="close-circle-outline" size="is-small"></b-icon> Clear</section>
 				<div class="discussion" ref="discussion">
 					<div class="message" :class="message.role" v-for="message in messages">
-						<div class="action inspect" @click="showChain(message.response)" v-if="message.role == 'assistant'"><b-icon icon="link-variant" size="is-small"></b-icon></div>
-						<div class="action evaluate" @click="evaluate(message.response)" v-if="message.role == 'assistant'"><b-icon icon="spellcheck" size="is-small"></b-icon></div>
-						<div class="action compare" @click="compare(message.response)" v-if="message.role == 'assistant'"><b-icon icon="compare-horizontal" size="is-small"></b-icon></div>
+						<div class="action inspect" @click="showChain(message.response)" v-if="message.role == 'assistant' || message.role == 'evaluator'"><b-icon icon="link-variant" size="is-small"></b-icon></div>
+						<div class="action evaluate" @click="evalCrit(message.response)" v-if="message.role == 'assistant'"><b-icon icon="spellcheck" size="is-small"></b-icon></div>
+						<div class="action compare" @click="evalQA(message.response)" v-if="message.role == 'assistant'"><b-icon icon="compare-horizontal" size="is-small"></b-icon></div>
 						<div class="avatar"><img :src="message.role == 'user' ? 'img/user.jpg' : channel.snippet.thumbnails.default.url"></div>
 						<div class="header">{{ message.role == 'user' ? 'You' : channel.snippet.title }}</div>
 						<div class="body">{{ message.text }}</div>

@@ -5,7 +5,8 @@ import utils
 import config
 import requests
 from chain_base import ChainParameters
-from chain_eval import EvalChain
+from chain_eval_qa import QAEvalChain
+from chain_eval_criteria import CriteriaEvalChain
 from chain_qa_base import QAChainBase
 from chain_qa_sources import QAChainBaseWithSources
 from chain_qa_conversation import QAChainConversational
@@ -145,25 +146,25 @@ class Agent:
     # done
     return callback_handler.to_dict()
 
-  def evaluate(self, text: str, criteria: list, overrides: dict) -> dict:
+  def evaluate_criteria(self, answer: str, criteria: list, overrides: dict) -> dict:
 
     # log
-    print(f'[agent] evaluating {text} against {", ".join(criteria)}')
+    print(f'[agent] evaluating {answer[0:64]} against {", ".join(criteria)}')
 
     # parse params
     parameters = ChainParameters(self.config, overrides)
 
     # callback handler
-    callback_handler = CallbackHandler(text, parameters)
+    callback_handler = CallbackHandler(answer, parameters)
 
     # build chain
     ollama_model = overrides['ollama_model'] if 'ollama_model' in overrides else self.config.ollama_model()
     ollama = Ollama(base_url=self.config.ollama_url(), model=ollama_model)
-    chain = EvalChain(ollama, criteria, callback_handler, parameters)
+    chain = CriteriaEvalChain(ollama, criteria, callback_handler, parameters)
 
     # now query
     print(f'[agent] evaluating using {ollama.model}')
-    chain.invoke(text)
+    chain.invoke(answer)
 
     # done
     res = callback_handler.to_dict()
@@ -188,7 +189,33 @@ class Agent:
     
     # done
     return res
+  
+  def evaluate_qa(self, question: str, answer: str, reference: str, overrides: dict) -> dict:
 
+    # log
+    print(f'[agent] evaluating {answer[0:64]}')
+
+    # parse params
+    parameters = ChainParameters(self.config, overrides)
+
+    # callback handler
+    callback_handler = CallbackHandler(answer, parameters)
+
+    # build chain
+    ollama_model = overrides['ollama_model'] if 'ollama_model' in overrides else self.config.ollama_model()
+    ollama = Ollama(base_url=self.config.ollama_url(), model=ollama_model)
+    chain = QAEvalChain(ollama, callback_handler)
+
+    # now query
+    print(f'[agent] evaluating using {ollama.model}')
+    chain.invoke(question, answer, reference)
+
+    # done
+    res = callback_handler.to_dict()
+
+    # done
+    return res
+  
   def __build_embedder(self):
     model = self.config.embeddings_model()
     print(f'[agent] building embeddings for {model}')

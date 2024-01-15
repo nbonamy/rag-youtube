@@ -147,17 +147,24 @@ var vm = new Vue({
       this.chain.chain.response = this.chain.answer
       this.isShowingChain = true
     },
-    evaluate(response) {
+    evalCrit(response) {
       this.isLoading = true
-      axios.get(`/eval?text=${response.answer}&criteria=${this.eval_criteria.join(",")}`).then(response => {
+      this.historyIndex = 0
+      this.messages.push({ role: 'user', 'text': `Evaluate the response against ${this.eval_criteria.join(", ")}` })
+      this.scrollDiscussion()
+      axios.get(`/evaluate/criteria?answer=${response.answer}&criteria=${this.eval_criteria.join(",")}`).then(response => {
+        this.response = response.data
+        this.messages.push({ role: 'evaluator', 'text': this.response.answer, 'response': this.response })
+        this.question = null
         this.isLoading = false
-        this.showEval(response.data)
+        this.scrollDiscussion()
+        this.showEvalCrit(response.data)
       }).catch(_ => {
         this.isLoading = false
         this.showError('Error while evaluating answer.')
       })
     },
-    showEval(response) {
+    showEvalCrit(response) {
       if (Object.keys(response.evaluation).length > 0) {
         this.evaluation = response.evaluation
         this.isShowingEval = true
@@ -168,18 +175,21 @@ var vm = new Vue({
         })
       }
     },
-    compare(response) {
+    evalQA(response) {
       this.prompt.title = 'Enter reference text'
       this.prompt.value = ''
       this.prompt.callback = () => {
         this.isPrompting = false
         this.isLoading = true
-        axios.get(`/similarity?text1=${response.answer}&text2=${this.prompt.value}`).then(response => {
+        this.historyIndex = 0
+        this.messages.push({ role: 'user', 'text': 'Evaluate the response' })
+        this.scrollDiscussion()
+          axios.get(`/evaluate/qa?question=${response.question}&answer=${response.answer}&reference=${this.prompt.value}`).then(response => {
+          this.response = response.data
+          this.messages.push({ role: 'evaluator', 'text': this.response.answer, 'response': this.response })
+          this.question = null
           this.isLoading = false
-          this.$buefy.dialog.alert({
-            title: 'Similarity Score',
-            message: response.data.similarity.toString(),
-          })
+          this.scrollDiscussion()
         }).catch(_ => {
           this.isLoading = false
           this.showError('Error while comparing answer.')
