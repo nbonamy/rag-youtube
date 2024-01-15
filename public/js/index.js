@@ -63,9 +63,15 @@ var vm = new Vue({
       chain: null,
       evaluation: null,      
       isLoading: false,
+      isPrompting: false,
       isConfiguring: false,
       isShowingChain: false,
       isShowingEval: false,
+      prompt: {
+        'title': 'Enter value',
+        'value': '',
+        'callback': null,
+      },
       eval_criteria: [
         'helpful',
         'detailed',
@@ -161,6 +167,25 @@ var vm = new Vue({
           message: response.answer.replace('\n', '<br>'),
         })
       }
+    },
+    compare(response) {
+      this.prompt.title = 'Enter reference text'
+      this.prompt.value = ''
+      this.prompt.callback = () => {
+        this.isPrompting = false
+        this.isLoading = true
+        axios.get(`/similarity?text1=${response.answer}&text2=${this.prompt.value}`).then(response => {
+          this.isLoading = false
+          this.$buefy.dialog.alert({
+            title: 'Similarity Score',
+            message: response.data.similarity.toString(),
+          })
+        }).catch(_ => {
+          this.isLoading = false
+          this.showError('Error while comparing answer.')
+        })
+      }
+      this.isPrompting = true
     },
     showError(msg) {
       this.isLoading = false

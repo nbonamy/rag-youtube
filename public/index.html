@@ -38,7 +38,8 @@
 				<div class="discussion" ref="discussion">
 					<div class="message" :class="message.role" v-for="message in messages">
 						<div class="action inspect" @click="showChain(message.response)" v-if="message.role == 'assistant'"><b-icon icon="link-variant" size="is-small"></b-icon></div>
-						<div class="action evaluare" @click="evaluate(message.response)" v-if="message.role == 'assistant'"><b-icon icon="spellcheck" size="is-small"></b-icon></div>
+						<div class="action evaluate" @click="evaluate(message.response)" v-if="message.role == 'assistant'"><b-icon icon="spellcheck" size="is-small"></b-icon></div>
+						<div class="action compare" @click="compare(message.response)" v-if="message.role == 'assistant'"><b-icon icon="compare-horizontal" size="is-small"></b-icon></div>
 						<div class="avatar"><img :src="message.role == 'user' ? 'img/user.jpg' : channel.snippet.thumbnails.default.url"></div>
 						<div class="header">{{ message.role == 'user' ? 'You' : channel.snippet.title }}</div>
 						<div class="body">{{ message.text }}</div>
@@ -65,6 +66,20 @@
 					<span v-if="response">{{ performance }}</span>
 				</div>
 			</section>
+
+			<b-modal v-model="isPrompting">
+				<div class="modal-card" style="margin: 0 auto;">
+					<header class="modal-card-head"><p class="modal-card-title">{{ prompt.title }}</p></header>
+					<section class="modal-card-body">
+						<b-input v-model="prompt.value" type="textarea"></b-input>
+					</section>
+					<footer class="modal-card-foot">
+						<b-button type="is-info" label="OK" @click="prompt.callback()"></b-button>
+						<b-button label="Cancel" @click="isPrompting=false" />
+					</footer>
+				</div>
+			</b-modal>
+
 			<b-modal v-model="isShowingChain">
 				<div class="modal-card" style="width: 800px; margin: 0 auto;">
 					<header class="modal-card-head"><p class="modal-card-title">Chain</p></header>
@@ -76,6 +91,7 @@
 					</footer>
 				</div>
 			</b-modal>
+
 			<b-modal v-model="isShowingEval">
 				<div class="modal-card" style="margin: 0 auto;">
 					<header class="modal-card-head"><p class="modal-card-title">Evaluation</p></header>
@@ -94,6 +110,7 @@
 					</footer>
 				</div>
 			</b-modal>
+
 			<b-modal v-model="isConfiguring">
 				<form action="">
 					<div class="modal-card" style="width: 600px; margin: 0 auto;">
@@ -147,6 +164,7 @@
 					</div>
 				</form>
 			</b-modal>
+
 		</main>
 	</div>
 
