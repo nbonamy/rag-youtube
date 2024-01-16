@@ -125,8 +125,7 @@ class Agent:
     callback_handler = CallbackHandler(question, parameters)
 
     # build chain
-    ollama_model = overrides['ollama_model'] if 'ollama_model' in overrides else self.config.ollama_model()
-    ollama = Ollama(base_url=self.config.ollama_url(), model=ollama_model)
+    ollama = Ollama(base_url=self.config.ollama_url(), model=parameters.ollama_model)
     chain = self.__build_qa_chain(ollama, retriever, callback_handler, parameters)
 
     # now query

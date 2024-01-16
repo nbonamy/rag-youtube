@@ -26,8 +26,7 @@ class Evaluator:
     callback_handler = CallbackHandler(answer, parameters)
 
     # build chain
-    ollama_model = overrides['ollama_model'] if 'ollama_model' in overrides else self.config.ollama_model()
-    ollama = Ollama(base_url=self.config.ollama_url(), model=ollama_model)
+    ollama = Ollama(base_url=self.config.ollama_url(), model=parameters.ollama_model)
     chain = CriteriaEvalChain(ollama, criteria, callback_handler, parameters)
 
     # now query
@@ -70,8 +69,7 @@ class Evaluator:
     callback_handler = CallbackHandler(answer, parameters)
 
     # build chain
-    ollama_model = overrides['ollama_model'] if 'ollama_model' in overrides else self.config.ollama_model()
-    ollama = Ollama(base_url=self.config.ollama_url(), model=ollama_model)
+    ollama = Ollama(base_url=self.config.ollama_url(), model=parameters.ollama_model)
     chain = QAEvalChain(ollama, callback_handler)
 
     # now query
