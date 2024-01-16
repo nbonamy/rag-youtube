@@ -117,13 +117,15 @@ var vm = new Vue({
         this.showError('Error while resetting model.')
       })
     },
+    request_overrides() {
+      return Object.entries(this.configuration).map(([key, value]) => `${key}=${value}`).join('&')
+    },
     ask() {
       this.isLoading = true
       this.historyIndex = 0
       this.messages.push({ role: 'user', 'text': this.question })
       this.scrollDiscussion()
-      parameters = Object.entries(this.configuration).map(([key, value]) => `${key}=${value}`).join('&')
-      axios.get(`/ask?question=${this.question}&${parameters}`).then(response => {
+      axios.get(`/ask?question=${this.question}&${this.request_overrides()}`).then(response => {
         this.response = response.data
         this.messages.push({ role: 'assistant', 'text': this.response.answer, 'response': this.response })
         this.history.push(this.question)
@@ -152,7 +154,7 @@ var vm = new Vue({
       this.historyIndex = 0
       this.messages.push({ role: 'user', 'text': `Evaluate the response against ${this.eval_criteria.join(", ")}` })
       this.scrollDiscussion()
-      axios.get(`/evaluate/criteria?answer=${response.answer}&criteria=${this.eval_criteria.join(",")}`).then(response => {
+      axios.get(`/evaluate/criteria?answer=${response.answer}&criteria=${this.eval_criteria.join(",")}&${this.request_overrides()}`).then(response => {
         this.response = response.data
         this.messages.push({ role: 'evaluator', 'text': this.response.answer, 'response': this.response })
         this.question = null
@@ -184,7 +186,7 @@ var vm = new Vue({
         this.historyIndex = 0
         this.messages.push({ role: 'user', 'text': 'Evaluate the response' })
         this.scrollDiscussion()
-          axios.get(`/evaluate/qa?question=${response.question}&answer=${response.answer}&reference=${this.prompt.value}`).then(response => {
+          axios.get(`/evaluate/qa?question=${response.question}&answer=${response.answer}&reference=${this.prompt.value}&${this.request_overrides()}`).then(response => {
           this.response = response.data
           this.messages.push({ role: 'evaluator', 'text': this.response.answer, 'response': this.response })
           this.question = null

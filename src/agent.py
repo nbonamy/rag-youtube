@@ -4,14 +4,6 @@ import html
 import utils
 import config
 import requests
-from chain_base import ChainParameters
-from chain_eval_qa import QAEvalChain
-from chain_eval_criteria import CriteriaEvalChain
-from chain_qa_base import QAChainBase
-from chain_qa_sources import QAChainBaseWithSources
-from chain_qa_conversation import QAChainConversational
-from callback import CallbackHandler
-
 import langchain
 from langchain_community.llms import Ollama
 from langchain.memory import ConversationBufferMemory
@@ -19,6 +11,11 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.embeddings import OpenAIEmbeddings, OllamaEmbeddings, HuggingFaceEmbeddings
 from sentence_transformers import SentenceTransformer, util
 from langchain_community.vectorstores import Chroma
+from chain_base import ChainParameters
+from chain_qa_base import QAChainBase
+from chain_qa_sources import QAChainBaseWithSources
+from chain_qa_conversation import QAChainConversational
+from callback import CallbackHandler
 
 class Agent:
 
@@ -41,9 +38,6 @@ class Agent:
 
   def calculate_embeddings(self, text) -> dict:
     return self.encoder.encode(text)
-
-  def reverse_embeddings(self, embeddings) -> dict:
-    return self.encoder.decode(embeddings)
 
   def calculate_similarity(self, text1, text2) -> dict:
     model = self.config.embeddings_model()
@@ -146,76 +140,6 @@ class Agent:
     # done
     return callback_handler.to_dict()
 
-  def evaluate_criteria(self, answer: str, criteria: list, overrides: dict) -> dict:
-
-    # log
-    print(f'[agent] evaluating {answer[0:64]} against {", ".join(criteria)}')
-
-    # parse params
-    parameters = ChainParameters(self.config, overrides)
-
-    # callback handler
-    callback_handler = CallbackHandler(answer, parameters)
-
-    # build chain
-    ollama_model = overrides['ollama_model'] if 'ollama_model' in overrides else self.config.ollama_model()
-    ollama = Ollama(base_url=self.config.ollama_url(), model=ollama_model)
-    chain = CriteriaEvalChain(ollama, criteria, callback_handler, parameters)
-
-    # now query
-    print(f'[agent] evaluating using {ollama.model}')
-    chain.invoke(answer)
-
-    # done
-    res = callback_handler.to_dict()
-
-    # process answer
-    res['evaluation'] = {}
-    answer = res['answer']
-    ratings = answer.split('\n')
-    for rating in ratings:
-      try:
-        tokens = rating.split(':')
-        if len(tokens) == 2:
-          criteria_name = tokens[0].strip()
-          rating_value = int(tokens[1].split('(')[0])
-          res['evaluation'][criteria_name] = rating_value
-      except:
-        pass
-
-    # make sure we have all criteria
-    if len(criteria) != len(res['evaluation'].keys()):
-      res['evaluation'] = {}
-    
-    # done
-    return res
-  
-  def evaluate_qa(self, question: str, answer: str, reference: str, overrides: dict) -> dict:
-
-    # log
-    print(f'[agent] evaluating {answer[0:64]}')
-
-    # parse params
-    parameters = ChainParameters(self.config, overrides)
-
-    # callback handler
-    callback_handler = CallbackHandler(answer, parameters)
-
-    # build chain
-    ollama_model = overrides['ollama_model'] if 'ollama_model' in overrides else self.config.ollama_model()
-    ollama = Ollama(base_url=self.config.ollama_url(), model=ollama_model)
-    chain = QAEvalChain(ollama, callback_handler)
-
-    # now query
-    print(f'[agent] evaluating using {ollama.model}')
-    chain.invoke(question, answer, reference)
-
-    # done
-    res = callback_handler.to_dict()
-
-    # done
-    return res
-  
   def __build_embedder(self):
     model = self.config.embeddings_model()
     print(f'[agent] building embeddings for {model}')

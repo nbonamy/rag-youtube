@@ -90,12 +90,12 @@ class CallbackHandler(BaseCallbackHandler):
     else:
       run = self.__get_step(run_id)
       if run is None:
-        print(f'[agent] on_chain_end called for unknown run id {run_id}')
+        print(f'[chain] on_chain_end called for unknown run id {run_id}')
         return
       run.end()
 
   def on_llm_start(self, serialized: dict, prompts: list, run_id: UUID, parent_run_id: UUID, **kwargs) -> None:
-    print(f'[agent] llm starting ("{prompts[0][0:64]}...")')
+    print(f'[chain] llm starting ("{prompts[0][0:64]}...")')
     parent = self.__get_step(parent_run_id)
     parent.add_step(ChainStep(
       run_id, 'llm', serialized, auto_start=False,
@@ -106,7 +106,7 @@ class CallbackHandler(BaseCallbackHandler):
   def on_llm_new_token(self, token: str, run_id: UUID, parent_run_id: UUID, **kwargs) -> None:
     run = self.__get_step(run_id)
     if run is None:
-      print(f'[agent] on_llm_new_token called for unknown run id {run_id}')
+      print(f'[chain] on_llm_new_token called for unknown run id {run_id}')
       return
     if run['response'] is None:
       run.start()
@@ -117,14 +117,14 @@ class CallbackHandler(BaseCallbackHandler):
   def on_llm_end(self, response: dict, run_id: UUID, **kwargs) -> None:
     run = self.__get_step(run_id)
     if run is None:
-      print(f'[agent] on_llm_end called for unknown run id {run_id}')
+      print(f'[chain] on_llm_end called for unknown run id {run_id}')
       return
     run.end()
     run['time_1st_token'] = self.__time_1st_token(run)
     run['tokens_per_sec'] = self.__tokens_per_sec(run)
   
   def on_retriever_start(self, serialized: dict, query: str, run_id: UUID, parent_run_id: UUID, **kwargs) -> None:
-    print(f'[agent] retriever starting ("{query[0:64]}...")')
+    print(f'[chain] retriever starting ("{query[0:64]}...")')
     parent = self.__get_step(parent_run_id)
     parent.add_step(ChainStep(
       run_id, 'retriever', serialized,
@@ -134,9 +134,9 @@ class CallbackHandler(BaseCallbackHandler):
   def on_retriever_end(self, documents: any, run_id: UUID, **kwargs) -> None:
     run = self.__get_step(run_id)
     if run is None:
-      print(f'[agent] on_retriever_end called for unknown run id {run_id}')
+      print(f'[chain] on_retriever_end called for unknown run id {run_id}')
       return
-    print(f'[agent] retrieved {len(documents)} relevant documents')
+    print(f'[chain] retrieved {len(documents)} relevant documents')
     run.end()
     run['documents'] = [doc.metadata for doc in documents]
 

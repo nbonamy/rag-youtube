@@ -3,6 +3,7 @@
 import json
 import consts
 from agent import Agent
+from evaluator import Evaluator
 from config import Config
 from bottle import Bottle, request, static_file
 from chain_base import ChainParameters
@@ -17,6 +18,7 @@ app.config.update({
 })
 
 agent = Agent(app.config.get('config'))
+evaluator = Evaluator(app.config.get('config'))
 
 @app.route('/config')
 def config():
@@ -78,11 +80,11 @@ def eval(method):
   # do it
   if method == 'criteria':
     criteria = request.query.criteria.split(',')
-    result = agent.evaluate_criteria(answer, criteria, overrides)
+    result = evaluator.evaluate_criteria(answer, criteria, overrides)
   elif method == 'qa':
     question = request.query.question
     reference = request.query.reference
-    result = agent.evaluate_qa(question, answer, reference, overrides)
+    result = evaluator.evaluate_qa(question, answer, reference, overrides)
   else:
     raise Exception(f'Unknown evaluation method {method}')
 
