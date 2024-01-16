@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import json
+import utils
 import consts
 from agent import Agent
 from evaluator import Evaluator
@@ -55,6 +56,12 @@ def embed():
 def reset():
   agent.reset()
   return { 'status': 'ok' }
+
+@app.route('/cost')
+def cost():
+  input_tokens = request.query.input_tokens
+  output_tokens = request.query.output_tokens
+  return { 'cost': utils.cost(input_tokens, output_tokens) }
 
 @app.route('/ask')
 def ask():

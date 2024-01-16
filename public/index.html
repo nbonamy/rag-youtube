@@ -37,6 +37,7 @@
 				<section class="reset" @click="reset"><b-icon icon="close-circle-outline" size="is-small"></b-icon> Clear</section>
 				<div class="discussion" ref="discussion">
 					<div class="message" :class="message.role" v-for="message in messages">
+						<div class="action code" @click="showCode(message.response)" v-if="message.role == 'assistant' || message.role == 'evaluator'"><b-icon icon="code-braces" size="is-small"></b-icon></div>
 						<div class="action inspect" @click="showChain(message.response)" v-if="message.role == 'assistant' || message.role == 'evaluator'"><b-icon icon="link-variant" size="is-small"></b-icon></div>
 						<div class="action evaluate" @click="evalCrit(message.response)" v-if="message.role == 'assistant'"><b-icon icon="spellcheck" size="is-small"></b-icon></div>
 						<div class="action compare" @click="evalQA(message.response)" v-if="message.role == 'assistant'"><b-icon icon="compare-horizontal" size="is-small"></b-icon></div>
@@ -168,12 +169,31 @@
 		</main>
 	</div>
 
+	<script type="text/x-template" id="code-viewer-template">
+		<b-modal :active="active">
+			<div class="modal-card" style="width: 800px; margin: 0 auto;">
+				<header class="modal-card-head"><p class="modal-card-title">{{ title }}</p></header>
+				<section class="modal-card-body">
+					<pre style="white-space: pre-wrap;">{{ code }}</pre>
+				</section>
+				<footer class="modal-card-foot">
+					<b-button label="Close" @click="$parent.close()" />
+				</footer>
+			</div>
+		</b-modal>
+	</script>
+	
 	<script type="text/x-template" id="chain-template">
 		<div class="chain">
 			<step :step="chain.chain" :level="0"></step>
 			<div class="step chain">
 				<div class="header">
-					{{ performance }}
+					<div>{{ performance }}</div>
+					<div>
+						Total input tokens: {{ chain.performance.input_tokens }} /
+						Total output tokens: {{ chain.performance.output_tokens }} /
+						Estimated cost: ${{ chain.performance.cost.toFixed(3) }}
+					</div>
 				</div>
 			</div>
 		</div>
@@ -181,11 +201,12 @@
 
 	<script type="text/x-template" id="step-template">
 		<div class="step" :class="step.type" :style="{ 'margin-left': (level==0?0:16) + 'px' }" :data-level="level">
-			<div class="header" @click="showCode(step)">
+			<div class="header" @click="showCode()">
 				<div class="performance">
 					<div>{{ step.elapsed }} ms</div>
 					<div v-if="step.type == 'llm'">
-						{{ step.tokens }} tok(s)
+						<div>{{ step.input_tokens }} tok(s)</div>
+						<div>{{ step.output_tokens }} tok(s)</div>
 					</div>
 				</div>
 				<div class="title">{{ title }}</div>
@@ -199,21 +220,10 @@
 				</div>
 				<div v-if="step.type == 'llm'">
 					<div class="prompt">{{ step.prompt }}</div>
-					<div class="response">{{ step.response }}</div>
+					<div class="response">{{ step.response ?? '[N/A]' }}</div>
 				</div>
 			</div>
 			<step :step="step" :level="level+1" :key="step.id" v-for="step in step.steps"></step>
-			<b-modal v-model="isShowingCode">
-				<div class="modal-card" style="width: 800px; margin: 0 auto;">
-					<header class="modal-card-head"><p class="modal-card-title">{{ title }}</p></header>
-					<section class="modal-card-body">
-						<pre style="white-space: pre-wrap;">{{ code }}</pre>
-					</section>
-					<footer class="modal-card-foot">
-						<b-button label="Close" @click="isShowingCode=false" />
-					</footer>
-				</div>
-			</b-modal>
 		</div>
 	</script>
 

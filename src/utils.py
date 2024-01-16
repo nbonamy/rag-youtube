@@ -1,6 +1,7 @@
 
 import time
 import json
+import consts
 
 def now():
   return int(time.time() * 1000)
@@ -22,3 +23,6 @@ def dumpj(data, filename):
 
 def is_true(value: str) -> bool:
   return value.lower() in ['true', '1', 'y', 'yes', 'on' ]
+
+def cost(input_tokens, output_tokens):
+  return input_tokens * consts.COST_INPUT_TOKENS_1K / 1000 + output_tokens * consts.COST_OUTPUT_TOKENS_1K / 1000

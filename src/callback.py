@@ -1,6 +1,7 @@
 
 import re
 import utils
+import tiktoken
 from uuid import UUID
 from langchain.callbacks.base import BaseCallbackHandler
 
@@ -99,7 +100,8 @@ class CallbackHandler(BaseCallbackHandler):
     parent = self.__get_step(parent_run_id)
     parent.add_step(ChainStep(
       run_id, 'llm', serialized, auto_start=False,
-      prompt=prompts[0], response=None, tokens=0,
+      prompt=prompts[0], input_tokens=self.__count_tokens(prompts[0]),
+      response=None, output_tokens=0,
       time_1st_token=None, tokens_per_sec=None
     ))
 
@@ -112,7 +114,7 @@ class CallbackHandler(BaseCallbackHandler):
       run.start()
       run['response'] = ''
     run['response'] += token
-    run['tokens'] += 1
+    run['output_tokens'] += 1
 
   def on_llm_end(self, response: dict, run_id: UUID, **kwargs) -> None:
     run = self.__get_step(run_id)
@@ -141,7 +143,7 @@ class CallbackHandler(BaseCallbackHandler):
     run['documents'] = [doc.metadata for doc in documents]
 
   def to_dict(self) -> dict:
-    return {
+    res={
       'question': self.question,
       'answer': self.__final_answer(),
       'sources': self.sources,
@@ -149,11 +151,14 @@ class CallbackHandler(BaseCallbackHandler):
       'parameters': self.parameters.to_dict(),
       'performance': {
         'total_time': int(self.root.ended_at - self.root.created_at),
-        'tokens': self.__get_sum_across_llm_runs('tokens'),
+        'input_tokens': self.__get_sum_across_llm_runs('input_tokens'),
+        'output_tokens': self.__get_sum_across_llm_runs('output_tokens'),
         'time_1st_token': self.__get_avg_across_llm_runs('time_1st_token'),
         'tokens_per_sec': self.__get_avg_across_llm_runs('tokens_per_sec'),
       }
     }
+    res['performance']['cost'] = utils.cost(res['performance']['input_tokens'], res['performance']['output_tokens'])
+    return res
 
   def __final_answer(self):
     if self.outputs is None:
@@ -172,7 +177,7 @@ class CallbackHandler(BaseCallbackHandler):
     return None if run.started_at is None else int(run.started_at - run.created_at)
 
   def __tokens_per_sec(self, run)  -> float:
-    return None if run.started_at is None else round(run['tokens'] / (run.ended_at - run.started_at) * 1000, 2)
+    return None if run.started_at is None else round(run['output_tokens'] / (run.ended_at - run.started_at) * 1000, 2)
 
   def __get_sum_across_llm_runs(self, key: str) -> any:
     return sum(value for value in self.__get_not_none_across_llm_runs(key))
@@ -206,3 +211,7 @@ class CallbackHandler(BaseCallbackHandler):
         llm_runs.append(run)
       llm_runs.extend(self.__get_llm_runs(run.steps))
     return llm_runs
+
+  def __count_tokens(self, text: str) -> int:
+    enc = tiktoken.encoding_for_model('gpt-4')
+    return len(enc.encode(text))

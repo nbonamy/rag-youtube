@@ -1,20 +1,30 @@
 
 // helper
-const formatPerformance = function(performance) {
-  return `Total time: ${performance?.total_time} ms / Tokens: ${performance?.tokens} / Time to 1st token: ${performance?.time_1st_token} ms / Tokens per sec: ${performance?.tokens_per_sec}`
+const ALL_TOKENS = 0
+const INPUT_TOKENS_ONLY = 1
+const OUTPUT_TOKENS_ONLY = 2
+const formatPerformance = function(performance, which_tokens=ALL_TOKENS) {
+  let tokens = 0
+  if (which_tokens == ALL_TOKENS) tokens = performance.input_tokens + performance.output_tokens
+  else if (which_tokens == INPUT_TOKENS_ONLY) tokens = performance.input_tokens
+  else if (which_tokens == OUTPUT_TOKENS_ONLY) tokens = performance.output_tokens
+  return `Total time: ${performance?.total_time} ms / Tokens: ${tokens} / Time to 1st token: ${performance?.time_1st_token} ms / Tokens per sec: ${performance?.tokens_per_sec}`
 }
 
-// components
+// code viewer
+let CodeViewer = {
+  name: 'CodeViewer',
+  template: '#code-viewer-template',
+  props: [ 'code', 'title' ],
+  data: () =>  { return { 'active': true, } },
+}
+
+// chain viewer
 let Step = {
   name: 'Step',
   template: '#step-template',
+  components: { CodeViewer },
   props: [ 'step', 'level' ],
-  data: () => {
-    return {
-      isShowingCode: false,
-      code: null,
-    }
-  },
   computed: {
     title() {
       if (this.step.repr == null) return 'ChainStep'
@@ -26,11 +36,19 @@ let Step = {
     },
   },
   methods: {
-    showCode(obj) {
+    showCode() {
       let clone = JSON.parse(JSON.stringify(this.step))
       delete clone.steps
       this.code = JSON.stringify(clone, null, 2)
-      this.isShowingCode = true
+      this.$buefy.modal.open({
+        parent: this,
+        trapFocus: true,
+        component: CodeViewer,
+        props: {
+          title: this.title,
+          code: JSON.stringify(clone, null, 2),
+        },
+      })
     },
   }
 }
@@ -41,7 +59,7 @@ let Chain = {
   props: [ 'chain' ],
   computed: {
     performance() {
-      return formatPerformance(this.chain.performance)
+      return formatPerformance(this.chain.performance, OUTPUT_TOKENS_ONLY)
     }
   }
 }
@@ -49,7 +67,7 @@ let Chain = {
 // init vue
 var vm = new Vue({
   el: '#app',
-  components: { Chain },
+  components: { Chain, CodeViewer },
   data: () => {
     return {
       configuration: {},
@@ -84,8 +102,8 @@ var vm = new Vue({
       return this.question != null && this.question.trim().length > 0
     },
     performance() {
-      return formatPerformance(this.response?.performance)
-    }
+      return formatPerformance(this.response?.performance, OUTPUT_TOKENS_ONLY)
+    },
   },
   methods: {
     onkey(event) {
@@ -141,6 +159,17 @@ var vm = new Vue({
       this.$nextTick(() => {
         let discussion = document.getElementsByClassName('discussion')[0]
         discussion.scrollTop = discussion.scrollHeight
+      })
+    },
+    showCode(response) {
+      this.$buefy.modal.open({
+        parent: this,
+        trapFocus: true,
+        component: CodeViewer,
+        props: {
+          title: 'Chain',
+          code: JSON.stringify(response, null, 2),
+        },
       })
     },
     showChain(response) {
