@@ -1,0 +1,9 @@
+Given the following extracted parts of a long document and a question, create a final answer.
+If you don't know the answer, just say that you don't know, nothing else.
+
+QUESTION: According to the context, {question}
+=========
+{summaries}
+=========
+
+FINAL ANSWER:

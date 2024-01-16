@@ -1,0 +1,16 @@
+Given the following extracted parts of several source documents and a question, create a final answer with references.
+If the sources are empty, just say that you there is no specific information available, nothing else.
+If the question is not directly related to the context, just say that you don't know, nothing else. 
+If not enough information is available in the context, just say that you don't know, nothing else.
+If you don't know the answer, just say that you don't know, nothing else.
+In any case, please do not leverage your own knowledge.
+Each source document is made of a "Content" section and a "Source" section which is what you should use to refer to that source. 
+ALWAYS return a "SOURCES" section at the end of your answer which is a comma separated list of sources that you see as relevant.
+
+SOURCES:
+{summaries}
+
+QUESTION:
+According to the context, {question}
+
+FINAL ANSWER:

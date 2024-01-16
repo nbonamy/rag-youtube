@@ -3,31 +3,6 @@ import utils
 from langchain.prompts import PromptTemplate
 from langchain_core.runnables import RunnableConfig
 
-PROMPT_QUESTION="""Use the following pieces of context to answer the question at the end.
-If the context is empty, just say that you there is no specific information available, nothing else.
-If the question is not directly related to the context, just say that you don't know, nothing else. 
-If not enough information is available in the context, just say that you don't know, nothing else.
-If you don't know the answer, just say that you don't know, nothing else.
-In any case, please do not leverage your own knowledge.
-
-CONTEXT:
-{context}
-
-QUESTION:
-{question}
-
-ANSWER:"""
-
-PROMPT_COMBINE="""Given the following extracted parts of a long document and a question, create a final answer.
-If you don't know the answer, just say that you don't know, nothing else.
-
-QUESTION: {question}
-=========
-{summaries}
-=========
-
-FINAL ANSWER:"""
-
 class ChainParameters:
   def __init__(self, config, overrides):
     self.chain_type = overrides['chain_type'] if 'chain_type' in overrides else config.chain_type()
@@ -76,10 +51,12 @@ class ChainBase:
     return {}
   
   def _get_question_prompt(self):
-    return PromptTemplate(input_variables=['context', 'question'], template=PROMPT_QUESTION)
+    with open('prompts/base.txt', 'r') as f:
+      return PromptTemplate(input_variables=['context', 'question'], template=f.read())
 
   def _get_combine_prompt(self):
-    return PromptTemplate(input_variables=['summaries', 'question'], template=PROMPT_COMBINE)
+    with open('prompts/combine.txt', 'r') as f:
+      return PromptTemplate(input_variables=['summaries', 'question'], template=f.read())
 
   def _dump_chain_prompts(self):
 

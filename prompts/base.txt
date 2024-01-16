@@ -1,0 +1,14 @@
+Use the following pieces of context to answer the question at the end.
+If the context is empty, just say that you there is no specific information available, nothing else.
+If the context is not relevant to the question, just say that you don't know, nothing else. 
+If the context does not contain enough information to answer the question, just say that you don't know, nothing else.
+If you don't know the answer, just say that you don't know, nothing else.
+In any case, please do not leverage your own knowledge.
+
+CONTEXT:
+{context}
+
+QUESTION:
+According to the context, {question}
+
+ANSWER:
