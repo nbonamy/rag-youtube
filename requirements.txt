@@ -1,5 +1,6 @@
 bottle
 chromadb
+tiktoken
 langchain
 langchain-community
 sentence_transformers

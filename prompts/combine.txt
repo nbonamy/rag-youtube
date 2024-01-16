@@ -1,9 +1,14 @@
-Given the following extracted parts of a long document and a question, create a final answer.
+Given the following context (extracted parts of a long document) and a question, create a final answer.
+If the context is empty, just say that you there is no specific information available, nothing else.
+If the context is not relevant to the question, just say that you don't know, nothing else. 
+If the context does not contain enough information to answer the question, just say that you don't know, nothing else.
 If you don't know the answer, just say that you don't know, nothing else.
+In any case, please do not leverage your own knowledge.
 
-QUESTION: According to the context, {question}
-=========
+CONTEXT:
 {summaries}
-=========
+
+QUESTION:
+According to the context, {question}
 
 FINAL ANSWER:
