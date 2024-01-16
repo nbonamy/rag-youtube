@@ -59,7 +59,7 @@
 						<b-input ref="prompt" v-model="question" placeholder="Ask any question!" @keydown.native="onkey"></b-input>
 						<p class="control"><b-button type="is-info" label="Ask" :disabled="!has_question" @click="ask"/></p>
 					</b-field>
-					<b-button class="configure" @click="isConfiguring=true">
+					<b-button class="configure" @click="editConfiguration()">
 						<b-icon icon="cog" size="is-small"></b-icon>
 					</b-button>
 				</div>
@@ -67,120 +67,45 @@
 					<span v-if="response">{{ performance }}</span>
 				</div>
 			</section>
-
-			<b-modal v-model="isPrompting">
-				<div class="modal-card" style="margin: 0 auto;">
-					<header class="modal-card-head"><p class="modal-card-title">{{ prompt.title }}</p></header>
-					<section class="modal-card-body">
-						<b-input v-model="prompt.value" type="textarea"></b-input>
-					</section>
-					<footer class="modal-card-foot">
-						<b-button type="is-info" label="OK" @click="prompt.callback()"></b-button>
-						<b-button label="Cancel" @click="isPrompting=false" />
-					</footer>
-				</div>
-			</b-modal>
-
-			<b-modal v-model="isShowingChain">
-				<div class="modal-card" style="width: 800px; margin: 0 auto;">
-					<header class="modal-card-head"><p class="modal-card-title">Chain</p></header>
-					<section class="modal-card-body" style="min-height: 600px; max-height: 600px; overflow-y: scroll;">
-						<chain :chain="chain" />
-					</section>
-					<footer class="modal-card-foot">
-						<b-button label="Close" @click="isShowingChain=false" />
-					</footer>
-				</div>
-			</b-modal>
-
-			<b-modal v-model="isShowingEval">
-				<div class="modal-card" style="margin: 0 auto;">
-					<header class="modal-card-head"><p class="modal-card-title">Evaluation</p></header>
-					<section class="modal-card-body">
-						<table class="evaluation">
-							<tr v-for="(rating, criteria) in evaluation">
-								<th class="criteria">{{ criteria }}</th>
-								<td class="rating">
-									<b-rate :value="rating" :disabled="true" :show-score="true" :spaced="true"></b-progress>
-								</td>
-							</tr>
-						</table>
-					</section>
-					<footer class="modal-card-foot">
-						<b-button label="Close" @click="isShowingEval=false" />
-					</footer>
-				</div>
-			</b-modal>
-
-			<b-modal v-model="isConfiguring">
-				<form action="">
-					<div class="modal-card" style="width: 600px; margin: 0 auto;">
-						<header class="modal-card-head"><p class="modal-card-title">Configuration</p></header>
-						<section class="modal-card-body">
-							<b-field label="Ollama Model">
-								<b-select v-model="configuration.ollama_model" :expanded="true">
-									<option v-for="model in models"
-                    :value="model.name"
-                    :key="model.digest">
-                    {{ model.name }}
-	                </option>
-								</b-select>
-							</b-field>
-							<b-field label="QA Chain Type">
-								<b-select v-model="configuration.chain_type" :expanded="true">
-									<option value="base">Basic</option>
-									<option value="sources">Sourced</option>
-									<option value="conversation">Conversational</option>
-								</b-select>
-							</b-field>
-							<b-field label="Doc Chain Type">
-								<b-select v-model="configuration.doc_chain_type" :expanded="true">
-									<option value="stuff">Stuff</option>
-									<option value="map_reduce">MapReduce</option>
-								</b-select>
-							</b-field>
-							<b-field label="Search Type">
-								<b-select v-model="configuration.search_type" :expanded="true">
-									<option value="similarity">Similarity</option>
-									<option value="similarity_score_threshold">Score Threshold</option>
-									<option value="mmr">MMR</option>
-								</b-select>
-							</b-field>
-							<b-field label="Similarity Threshold">
-								<b-input type="number" min="0" max="1" step="0.01" v-model="configuration.score_threshold"></b-input>
-							</b-field>
-							<b-field label="Documents Count">
-								<b-input type="number" v-model="configuration.document_count" min="1"></b-input>
-							</b-field>
-							<b-field>
-								<b-checkbox v-model="configuration.custom_prompts">Use Custom Prompts</b-checkbox>
-							</b-field>
-							<b-field>
-								<b-checkbox v-model="configuration.return_sources">Return Sources</b-checkbox>
-							</b-field>
-						</section>
-						<footer class="modal-card-foot">
-							<b-button label="Close" @click="isConfiguring=false" />
-						</footer>
-					</div>
-				</form>
-			</b-modal>
-
 		</main>
 	</div>
 
+	<script type="text/x-template" id="prompt-template">
+		<div class="modal-card" style="margin: 0 auto;">
+			<header class="modal-card-head"><p class="modal-card-title">{{ title }}</p></header>
+			<section class="modal-card-body">
+				<b-input v-model="value" type="textarea"></b-input>
+			</section>
+			<footer class="modal-card-foot">
+				<b-button type="is-info" label="OK" @click="$parent.close(); callback(value)"></b-button>
+				<b-button label="Close" @click="$parent.close()" />
+			</footer>
+		</div>
+	</script>
+
 	<script type="text/x-template" id="code-viewer-template">
-		<b-modal :active="active">
-			<div class="modal-card" style="width: 800px; margin: 0 auto;">
-				<header class="modal-card-head"><p class="modal-card-title">{{ title }}</p></header>
-				<section class="modal-card-body">
-					<pre style="white-space: pre-wrap;">{{ code }}</pre>
-				</section>
-				<footer class="modal-card-foot">
-					<b-button label="Close" @click="$parent.close()" />
-				</footer>
-			</div>
-		</b-modal>
+		<div class="modal-card" style="width: 800px; margin: 0 auto;">
+			<header class="modal-card-head"><p class="modal-card-title">{{ title }}</p></header>
+			<section class="modal-card-body">
+				<pre style="white-space: pre-wrap;">{{ code }}</pre>
+			</section>
+			<footer class="modal-card-foot">
+				<b-button label="Close" @click="$parent.close()" />
+			</footer>
+		</div>
+	</script>
+
+	<script type="text/x-template" id="chain-viewer-template">
+		<div class="modal-card" style="width: 800px; margin: 0 auto;">
+			<header class="modal-card-head"><p class="modal-card-title">{{ title }}</p></header>
+			<section class="modal-card-body" style="min-height: 600px; max-height: 600px; overflow-y: scroll;">
+				<chain :chain="chain" />
+			</section>
+			<footer class="modal-card-foot">
+				<b-button label="Close" @click="$parent.close()"></b-button>
+				<span>{{ performance }}</span>
+			</footer>
+		</div>
 	</script>
 	
 	<script type="text/x-template" id="chain-template">
@@ -227,6 +152,79 @@
 		</div>
 	</script>
 
+	<script type="text/x-template" id="evaluation-viewer-template">
+		<div class="modal-card" style="margin: 0 auto;">
+			<header class="modal-card-head"><p class="modal-card-title">Evaluation</p></header>
+			<section class="modal-card-body">
+				<table class="evaluation">
+					<tr v-for="(rating, criteria) in evaluation">
+						<th class="criteria">{{ criteria }}</th>
+						<td class="rating">
+							<b-rate :value="rating" :disabled="true" :show-score="true" :spaced="true"></b-rate>
+						</td>
+					</tr>
+				</table>
+			</section>
+			<footer class="modal-card-foot">
+				<b-button label="Close" @click="$parent.close()"></b-button>
+			</footer>
+		</div>
+	</script>
+
+	<script type="text/x-template" id="configuration-template">
+		<form action="">
+			<div class="modal-card" style="width: 600px; margin: 0 auto;">
+				<header class="modal-card-head"><p class="modal-card-title">Configuration</p></header>
+				<section class="modal-card-body">
+					<b-field label="Ollama Model">
+						<b-select v-model="configuration.ollama_model" :expanded="true">
+							<option v-for="model in models"
+								:value="model.name"
+								:key="model.digest">
+								{{ model.name }}
+							</option>
+						</b-select>
+					</b-field>
+					<b-field label="QA Chain Type">
+						<b-select v-model="configuration.chain_type" :expanded="true">
+							<option value="base">Basic</option>
+							<option value="sources">Sourced</option>
+							<option value="conversation">Conversational</option>
+						</b-select>
+					</b-field>
+					<b-field label="Doc Chain Type">
+						<b-select v-model="configuration.doc_chain_type" :expanded="true">
+							<option value="stuff">Stuff</option>
+							<option value="map_reduce">MapReduce</option>
+						</b-select>
+					</b-field>
+					<b-field label="Search Type">
+						<b-select v-model="configuration.search_type" :expanded="true">
+							<option value="similarity">Similarity</option>
+							<option value="similarity_score_threshold">Score Threshold</option>
+							<option value="mmr">MMR</option>
+						</b-select>
+					</b-field>
+					<b-field label="Similarity Threshold">
+						<b-input type="number" min="0" max="1" step="0.01" v-model="configuration.score_threshold"></b-input>
+					</b-field>
+					<b-field label="Documents Count">
+						<b-input type="number" v-model="configuration.document_count" min="1"></b-input>
+					</b-field>
+					<b-field>
+						<b-checkbox v-model="configuration.custom_prompts">Use Custom Prompts</b-checkbox>
+					</b-field>
+					<b-field>
+						<b-checkbox v-model="configuration.return_sources">Return Sources</b-checkbox>
+					</b-field>
+				</section>
+				<footer class="modal-card-foot">
+					<b-button label="Close" @click="$parent.close()" />
+				</footer>
+			</div>
+		</form>
+	</script>	
+	
 </body>
 
 </html>

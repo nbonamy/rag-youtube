@@ -5,10 +5,33 @@ const INPUT_TOKENS_ONLY = 1
 const OUTPUT_TOKENS_ONLY = 2
 const formatPerformance = function(performance, which_tokens=ALL_TOKENS) {
   let tokens = 0
+  let label = 'Tokens'
   if (which_tokens == ALL_TOKENS) tokens = performance.input_tokens + performance.output_tokens
-  else if (which_tokens == INPUT_TOKENS_ONLY) tokens = performance.input_tokens
-  else if (which_tokens == OUTPUT_TOKENS_ONLY) tokens = performance.output_tokens
-  return `Total time: ${performance?.total_time} ms / Tokens: ${tokens} / Time to 1st token: ${performance?.time_1st_token} ms / Tokens per sec: ${performance?.tokens_per_sec}`
+  else if (which_tokens == INPUT_TOKENS_ONLY) { tokens = performance.input_tokens; label = 'Input tokens' }
+  else if (which_tokens == OUTPUT_TOKENS_ONLY) { tokens = performance.output_tokens; label = 'Output tokens' }
+  return `Total time: ${performance?.total_time} ms / ${label}: ${tokens} / Time to 1st token: ${performance?.time_1st_token} ms / Tokens per sec: ${performance?.tokens_per_sec}`
+}
+
+// configuration
+let Configuration = {
+  name: 'Configuration',
+  template: '#configuration-template',
+  props: [ 'configuration', 'models' ],
+}
+
+// prompt
+let Prompt = {
+  name: 'Prompt',
+  template: '#prompt-template',
+  props: [ 'title', 'initialValue', 'callback' ],
+  data: () => { return { value: this.initialValue, } },
+  methods: {
+    onkey(event) {
+      if (event.keyCode == 13) {
+        this.prompt.callback()
+      }
+    },
+  }
 }
 
 // code viewer
@@ -16,7 +39,6 @@ let CodeViewer = {
   name: 'CodeViewer',
   template: '#code-viewer-template',
   props: [ 'code', 'title' ],
-  data: () =>  { return { 'active': true, } },
 }
 
 // chain viewer
@@ -43,6 +65,7 @@ let Step = {
       this.$buefy.modal.open({
         parent: this,
         trapFocus: true,
+        hasModalCard: true,
         component: CodeViewer,
         props: {
           title: this.title,
@@ -63,6 +86,33 @@ let Chain = {
     }
   }
 }
+let ChainViewer = {
+  name: 'ChainViewer',
+  template: '#chain-viewer-template',
+  components: { Chain },
+  props: [ 'chain' ],
+  computed: {
+    title() {
+      return [
+        this.chain.parameters.ollama_model,
+        this.chain.parameters.chain_type,
+        this.chain.parameters.doc_chain_type,
+        this.chain.parameters.search_type,
+        this.chain.parameters.custom_prompts ? 'custom' : 'default',
+      ].join(' / ')
+    },
+    performance() {
+      return formatPerformance(this.chain.performance, ALL_TOKENS)
+    }
+  },
+}
+
+// evaluation viewer
+let EvaluationViewer = {
+  name: 'EvaluationViewer',
+  template: '#evaluation-viewer-template',
+  props: [ 'evaluation' ],
+}
 
 // init vue
 var vm = new Vue({
@@ -78,18 +128,7 @@ var vm = new Vue({
       history: [],
       historyIndex: 0,
       response: null,
-      chain: null,
-      evaluation: null,      
       isLoading: false,
-      isPrompting: false,
-      isConfiguring: false,
-      isShowingChain: false,
-      isShowingEval: false,
-      prompt: {
-        'title': 'Enter value',
-        'value': '',
-        'callback': null,
-      },
       eval_criteria: [
         'helpful',
         'detailed',
@@ -135,6 +174,18 @@ var vm = new Vue({
         this.showError('Error while resetting model.')
       })
     },
+    editConfiguration() {
+      this.$buefy.modal.open({
+        parent: this,
+        trapFocus: true,
+        hasModalCard: true,
+        component: Configuration,
+        props: {
+          models: this.models,
+          configuration: this.configuration
+        },
+      })
+    },
     request_overrides() {
       return Object.entries(this.configuration).map(([key, value]) => `${key}=${value}`).join('&')
     },
@@ -165,6 +216,7 @@ var vm = new Vue({
       this.$buefy.modal.open({
         parent: this,
         trapFocus: true,
+        hasModalCard: true,
         component: CodeViewer,
         props: {
           title: 'Chain',
@@ -173,10 +225,18 @@ var vm = new Vue({
       })
     },
     showChain(response) {
-      this.chain = response
-      this.chain.chain.prompt = this.chain.question
-      this.chain.chain.response = this.chain.answer
-      this.isShowingChain = true
+      let chain = response
+      chain.chain.prompt = chain.question
+      chain.chain.response = chain.answer
+      this.$buefy.modal.open({
+        parent: this,
+        trapFocus: true,
+        hasModalCard: true,
+        component: ChainViewer,
+        props: {
+          chain: chain,
+        },
+      })
     },
     evalCrit(response) {
       this.isLoading = true
@@ -197,8 +257,13 @@ var vm = new Vue({
     },
     showEvalCrit(response) {
       if (Object.keys(response.evaluation).length > 0) {
-        this.evaluation = response.evaluation
-        this.isShowingEval = true
+        this.$buefy.modal.open({
+          parent: this,
+          trapFocus: true,
+          hasModalCard: true,
+          component: EvaluationViewer,
+          props: { 'evaluation': response.evaluation },
+        })
       } else {
         this.$buefy.dialog.alert({
           title: 'Answer Evaluation',
@@ -207,26 +272,31 @@ var vm = new Vue({
       }
     },
     evalQA(response) {
-      this.prompt.title = 'Enter reference text'
-      this.prompt.value = ''
-      this.prompt.callback = () => {
-        this.isPrompting = false
-        this.isLoading = true
-        this.historyIndex = 0
-        this.messages.push({ role: 'user', 'text': 'Evaluate the response' })
-        this.scrollDiscussion()
-          axios.get(`/evaluate/qa?question=${response.question}&answer=${response.answer}&reference=${this.prompt.value}&${this.request_overrides()}`).then(response => {
-          this.response = response.data
-          this.messages.push({ role: 'evaluator', 'text': this.response.answer, 'response': this.response })
-          this.question = null
-          this.isLoading = false
-          this.scrollDiscussion()
-        }).catch(_ => {
-          this.isLoading = false
-          this.showError('Error while comparing answer.')
-        })
-      }
-      this.isPrompting = true
+      this.$buefy.modal.open({
+        parent: this,
+        trapFocus: true,
+        hasModalCard: true,
+        component: Prompt,
+        props: {
+          title: 'Enter reference text',
+          callback: (value) => {
+            this.isLoading = true
+            this.historyIndex = 0
+            this.messages.push({ role: 'user', 'text': 'Evaluate the response' })
+            this.scrollDiscussion()
+              axios.get(`/evaluate/qa?question=${response.question}&answer=${response.answer}&reference=${value}&${this.request_overrides()}`).then(response => {
+              this.response = response.data
+              this.messages.push({ role: 'evaluator', 'text': this.response.answer, 'response': this.response })
+              this.question = null
+              this.isLoading = false
+              this.scrollDiscussion()
+            }).catch(_ => {
+              this.isLoading = false
+              this.showError('Error while comparing answer.')
+            })
+          }
+        }
+      })
     },
     showError(msg) {
       this.isLoading = false
