@@ -3,8 +3,8 @@
 import json
 import utils
 import consts
-from agent import Agent
-from evaluator import Evaluator
+from agent_qa import AgentQA
+from agent_eval import Evaluator
 from config import Config
 from bottle import Bottle, request, static_file
 from chain_base import ChainParameters
@@ -18,7 +18,7 @@ app.config.update({
   'config': Config(consts.CONFIG_PATH)
 })
 
-agent = Agent(app.config.get('config'))
+agent = AgentQA(app.config.get('config'))
 evaluator = Evaluator(app.config.get('config'))
 
 @app.route('/config')

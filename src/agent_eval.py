@@ -1,18 +1,14 @@
 #!/usr/bin/env python3
-import langchain
-from langchain_community.llms import Ollama
+from agent_base import AgentBase
+from callback import CallbackHandler
 from chain_base import ChainParameters
 from chain_eval_qa import QAEvalChain
 from chain_eval_criteria import CriteriaEvalChain
-from callback import CallbackHandler
 
-class Evaluator:
+class Evaluator(AgentBase):
 
   def __init__(self, config):
-    if config.debug():
-      langchain.verbose = True
-      langchain.debug = True
-    self.config = config
+    super().__init__(config)
   
   def evaluate_criteria(self, answer: str, criteria: list, overrides: dict) -> dict:
 
@@ -26,7 +22,7 @@ class Evaluator:
     callback_handler = CallbackHandler(answer, parameters)
 
     # build chain
-    ollama = Ollama(base_url=self.config.ollama_url(), model=parameters.ollama_model)
+    ollama = self._build_llm(parameters)
     chain = CriteriaEvalChain(ollama, criteria, callback_handler, parameters)
 
     # now query
@@ -69,7 +65,7 @@ class Evaluator:
     callback_handler = CallbackHandler(answer, parameters)
 
     # build chain
-    ollama = Ollama(base_url=self.config.ollama_url(), model=parameters.ollama_model)
+    ollama = self._build_llm(parameters)
     chain = QAEvalChain(ollama, callback_handler)
 
     # now query
@@ -81,3 +77,4 @@ class Evaluator:
 
     # done
     return res
+  

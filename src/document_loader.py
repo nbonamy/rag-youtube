@@ -3,19 +3,19 @@ import os
 import json
 import consts
 import utils
-from agent import Agent
 from config import Config
+from agent_load import Loader
 from langchain_community.document_loaders import DirectoryLoader, TextLoader
 
 def main():
 
   # init
   config = Config(consts.CONFIG_PATH)
-  agent = Agent(config)
+  loader = Loader(config)
 
   # loader = DirectoryLoader('./captions', glob="./_*.cleaned.vtt", loader_cls=TextLoader)
   # documents = loader.load()
-  # agent.add_documents(documents, {})
+  # loader.add_documents(documents, {})
   # return
 
   # print config
@@ -63,7 +63,7 @@ def main():
       # do it
       print(f'[loader][{index}/{len(all_files)}] adding {video_id} to database...')
       with open(f'captions/{filename}') as f:
-        agent.add_text(f.read(), metadata)
+        loader.add_text(f.read(), metadata)
     
       # update index
       loaded.append(filename)

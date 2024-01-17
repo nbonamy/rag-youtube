@@ -1,91 +1,24 @@
 #!/usr/bin/env python3
-
 import html
 import utils
-import config
-import requests
-import langchain
-from langchain_community.llms import Ollama
-from langchain.memory import ConversationBufferMemory
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.embeddings import OpenAIEmbeddings, OllamaEmbeddings, HuggingFaceEmbeddings
-from sentence_transformers import SentenceTransformer, util
-from langchain_community.vectorstores import Chroma
+from agent_base import AgentBase
+from callback import CallbackHandler
 from chain_base import ChainParameters
 from chain_qa_base import QAChainBase
 from chain_qa_sources import QAChainBaseWithSources
 from chain_qa_conversation import QAChainConversational
-from callback import CallbackHandler
+from langchain.memory import ConversationBufferMemory
 
-class Agent:
+class AgentQA(AgentBase):
 
   def __init__(self, config):
-    if config.debug():
-      langchain.verbose = True
-      langchain.debug = True
-    self.config = config
-    self.__build_embedder()
-    self.vectorstore = Chroma(persist_directory=config.db_persist_directory(), embedding_function=self.embeddings)
-    self.splitter = RecursiveCharacterTextSplitter(chunk_size=config.split_chunk_size(), chunk_overlap=config.split_chunk_overlap())
+    super().__init__(config)
+    self._build_embedder()
+    self._build_vectorstore()
     self.memory = ConversationBufferMemory(memory_key='chat_history', max_len=50, return_messages=True, output_key='answer')
   
   def reset(self):
     self.memory.clear()
-
-  def list_ollama_models(self) -> dict:
-    url = f'{self.config.ollama_url()}/api/tags'
-    return requests.get(url).json()
-
-  def calculate_embeddings(self, text) -> dict:
-    return self.encoder.encode(text)
-
-  def calculate_similarity(self, text1, text2) -> dict:
-    model = self.config.embeddings_model()
-    e1 = self.encoder.encode(text1)
-    e2 = self.encoder.encode(text2)
-    if 'paraphrase' in model:
-      return util.cos_sim(e1, e2)
-    else:
-      return util.dot_score(e1, e2)
-
-  def add_text(self, content, metadata) -> None:
-
-    # log
-    #print(f'[database] adding {id} to database with metadata {metadata} and content of length {len(content)}')
-
-    # split
-    #print('[agent] splitting text')
-    all_splits = self.splitter.split_text(content)
-    metadatas = [metadata] * len(all_splits)
-    
-    # create embeddings
-    #print('[agent] creating embeddings')
-    self.vectorstore.add_texts(all_splits, metadatas=metadatas)
-
-    # done
-    self.vectorstore.persist()
-    return
-
-  def add_documents(self, documents, metadata) -> None:
-
-    # log
-    #print(f'[database] adding {id} to database with metadata {metadata} and content of length {len(content)}')
-
-    # split
-    #print('[agent] splitting text')
-    all_splits = self.splitter.split_documents(documents)
-
-    # create embeddings
-    #print('[agent] creating embeddings')
-    self.vectorstore = Chroma.from_documents(
-      documents=all_splits,
-      embedding=self.embeddings,
-      persist_directory=self.config.db_persist_directory()
-    )
-
-    # done
-    self.vectorstore.persist()
-    return
 
   def query(self, question: str, overrides: dict) -> dict:
 
@@ -125,7 +58,7 @@ class Agent:
     callback_handler = CallbackHandler(question, parameters)
 
     # build chain
-    ollama = Ollama(base_url=self.config.ollama_url(), model=parameters.ollama_model)
+    ollama = self._build_llm(parameters)
     chain = self.__build_qa_chain(ollama, retriever, callback_handler, parameters)
 
     # now query
@@ -138,19 +71,6 @@ class Agent:
 
     # done
     return callback_handler.to_dict()
-
-  def __build_embedder(self):
-    model = self.config.embeddings_model()
-    print(f'[agent] building embeddings for {model}')
-    if model == 'ollama':
-      self.encoder = None
-      self.embeddings = OllamaEmbeddings(base_url=config.ollama_url(), model=config.ollama_model())
-    elif model.startswith('openai:'):
-      self.encoder = None
-      self.embeddings = OpenAIEmbeddings(model=model.split(':')[1])
-    else:
-      self.encoder = SentenceTransformer(model)
-      self.embeddings = HuggingFaceEmbeddings(model_name=model)
 
   def __build_qa_chain(self, llm, retriever, callback, parameters: ChainParameters):
     if parameters.chain_type == 'base':
