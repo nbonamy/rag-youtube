@@ -146,7 +146,7 @@ var vm = new Vue({
         component: CodeViewer,
         props: {
           title: 'Chain',
-          code: JSON.stringify(response, null, 2),
+          code: response,
         },
       })
     },

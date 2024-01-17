@@ -52,7 +52,7 @@ export default {
         component: CodeViewer,
         props: {
           title: this.title,
-          code: JSON.stringify(clone, null, 2),
+          code: clone,
         },
       })
     },
