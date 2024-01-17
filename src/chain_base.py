@@ -6,6 +6,7 @@ from langchain_core.runnables import RunnableConfig
 class ChainParameters:
   def __init__(self, config, overrides):
     self.ollama_model = overrides['ollama_model'] if 'ollama_model' in overrides else config.ollama_model()
+    self.llm_temperature = float(overrides['llm_temperature']) if 'llm_temperature' in overrides else config.llm_temperature()
     self.chain_type = overrides['chain_type'] if 'chain_type' in overrides else config.chain_type()
     self.doc_chain_type = overrides['doc_chain_type'] if 'doc_chain_type' in overrides else config.doc_chain_type()
     self.search_type = overrides['search_type'] if 'search_type' in overrides else config.search_type()
@@ -17,6 +18,7 @@ class ChainParameters:
   def to_dict(self):
     return {
       'ollama_model': self.ollama_model,
+      'llm_temperature': self.llm_temperature,
       'chain_type': self.chain_type,
       'doc_chain_type': self.doc_chain_type,
       'search_type': self.search_type,

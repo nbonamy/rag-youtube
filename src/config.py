@@ -27,6 +27,9 @@ class Config:
   # https://ollama.ai/library
   def ollama_model(self):
     return self.__get_value(CONFIG_SECTION_GENERAL, 'ollama_model') or consts.DEFAULT_OLLAMA_MODEL
+  
+  def llm_temperature(self):
+    return float(self.__get_value(CONFIG_SECTION_GENERAL, 'llm_temperature') or consts.DEFAULT_LLM_TEMPERATURE)
 
   def db_persist_directory(self):
     return self.__get_value(CONFIG_SECTION_GENERAL, 'db_persist_dir') or consts.DEFAULT_DB_PERSIST_DIR
