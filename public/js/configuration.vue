@@ -66,6 +66,6 @@ export default {
 <style>
 .field-label {
   white-space: nowrap;
-  flex-basis: 160px;
+  flex-basis: 100px;
 }
 </style>
