@@ -20,6 +20,6 @@ DEFAULT_DOCUMENT_COUNT = 4
 
 # costing
 # https://openai.com/pricing
-# GPT-4 32K as of 16-Jan-2024
-COST_INPUT_TOKENS_1K = 0.06
-COST_OUTPUT_TOKENS_1K = 0.12
+# GPT-4 Turbo as of 16-Jan-2024
+COST_INPUT_TOKENS_1K = 0.01
+COST_OUTPUT_TOKENS_1K = 0.03
