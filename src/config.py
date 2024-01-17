@@ -49,6 +49,9 @@ class Config:
   
   def search_type(self):
     return self.__get_value(CONFIG_SECTION_SEARCH, 'search_type') or consts.DEFAULT_SEARCH_TYPE
+  
+  def memory_type(self):
+    return self.__get_value(CONFIG_SECTION_SEARCH, 'memory_type') or consts.DEFAULT_MEMORY_TYPE
 
   def document_count(self):
     return int(self.__get_value(CONFIG_SECTION_SEARCH, 'document_count') or consts.DEFAULT_DOCUMENT_COUNT)

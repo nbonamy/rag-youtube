@@ -90,6 +90,7 @@ For enumerated options, acceptables values are:
 - `chain_type`: `base`, `sources`, `conversation`
 - `doc_chain_type`: `stuff`, `map_reduce`, `refine`, `map_rerank`
 - `search_type`: `similarity`, `similarity_score_threshold`, `mmr`
+- `memory_type`: `buffer`, `buffer_window`, `summary`
 
 ## Debugging
 

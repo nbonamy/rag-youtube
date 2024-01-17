@@ -7,7 +7,7 @@ from chain_base import ChainParameters
 from chain_qa_base import QAChainBase
 from chain_qa_sources import QAChainBaseWithSources
 from chain_qa_conversation import QAChainConversational
-from langchain.memory import ConversationBufferMemory
+from langchain.memory import ConversationBufferMemory, ConversationBufferWindowMemory, ConversationSummaryMemory
 
 class AgentQA(AgentBase):
 
@@ -15,7 +15,7 @@ class AgentQA(AgentBase):
     super().__init__(config)
     self._build_embedder()
     self._build_vectorstore()
-    self.memory = ConversationBufferMemory(memory_key='chat_history', max_len=50, return_messages=True, output_key='answer')
+    self.__build_memory()
   
   def reset(self):
     self.memory.clear()
@@ -71,6 +71,18 @@ class AgentQA(AgentBase):
 
     # done
     return callback_handler.to_dict()
+
+  def __build_memory(self):
+    memory_type = self.config.memory_type()
+    if memory_type == 'buffer':
+      self.memory = ConversationBufferMemory(memory_key='chat_history', max_len=50, return_messages=True, output_key='answer')
+    elif memory_type == 'buffer_window':
+      self.memory = ConversationBufferWindowMemory(memory_key='chat_history', k=5, return_messages=True, output_key='answer')
+    elif memory_type == 'summary':
+      llm=self._build_llm(ChainParameters(self.config, {}))
+      self.memory = ConversationSummaryMemory(llm=llm, memory_key='chat_history', max_len=50, return_messages=True, output_key='answer')
+    else:
+      raise Exception(f'Unknown memory type "{memory_type}"')
 
   def __build_qa_chain(self, llm, retriever, callback, parameters: ChainParameters):
     if parameters.chain_type == 'base':
