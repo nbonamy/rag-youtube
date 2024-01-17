@@ -12,112 +12,35 @@ const formatPerformance = function(performance, which_tokens=ALL_TOKENS) {
   return `Total time: ${performance?.total_time} ms / ${label}: ${tokens} / Time to 1st token: ${performance?.time_1st_token} ms / Tokens per sec: ${performance?.tokens_per_sec}`
 }
 
-// configuration
-let Configuration = {
-  name: 'Configuration',
-  template: '#configuration-template',
-  props: [ 'configuration', 'models' ],
-}
-
-// prompt
-let Prompt = {
-  name: 'Prompt',
-  template: '#prompt-template',
-  props: [ 'title', 'initialValue', 'callback' ],
-  data: () => { return { value: this.initialValue, } },
-  methods: {
-    onkey(event) {
-      if (event.keyCode == 13) {
-        this.prompt.callback()
-      }
-    },
-  }
-}
-
-// code viewer
-let CodeViewer = {
-  name: 'CodeViewer',
-  template: '#code-viewer-template',
-  props: [ 'code', 'title' ],
-}
-
-// chain viewer
-let Step = {
-  name: 'Step',
-  template: '#step-template',
-  components: { CodeViewer },
-  props: [ 'step', 'level' ],
-  computed: {
-    title() {
-      if (this.step.repr == null) return 'ChainStep'
-      if (this.step.type == 'llm') return this.step.repr
-      return this.step.repr?.split('(')[0]
-    },
-    sources() {
-      return this.step.documents.map((d) => d.source)
-    },
+// vue sfc loader
+const { loadModule } = window['vue2-sfc-loader']
+const options = {
+  moduleCache: {
+    vue: Vue,
   },
-  methods: {
-    showCode() {
-      let clone = JSON.parse(JSON.stringify(this.step))
-      delete clone.steps
-      this.code = JSON.stringify(clone, null, 2)
-      this.$buefy.modal.open({
-        parent: this,
-        trapFocus: true,
-        hasModalCard: true,
-        component: CodeViewer,
-        props: {
-          title: this.title,
-          code: JSON.stringify(clone, null, 2),
-        },
-      })
-    },
-  }
-}
-let Chain = {
-  'name': 'Chain',
-  template: '#chain-template',
-  components: { 'step': Step, },
-  props: [ 'chain' ],
-  computed: {
-    performance() {
-      return formatPerformance(this.chain.performance, OUTPUT_TOKENS_ONLY)
-    }
-  }
-}
-let ChainViewer = {
-  name: 'ChainViewer',
-  template: '#chain-viewer-template',
-  components: { Chain },
-  props: [ 'chain' ],
-  computed: {
-    title() {
-      return [
-        this.chain.parameters.ollama_model,
-        this.chain.parameters.chain_type,
-        this.chain.parameters.doc_chain_type,
-        this.chain.parameters.search_type,
-        this.chain.parameters.custom_prompts ? 'custom' : 'default',
-      ].join(' / ')
-    },
-    performance() {
-      return formatPerformance(this.chain.performance, ALL_TOKENS)
-    }
+  async getFile(url) {
+    const res = await fetch(url);
+    if ( !res.ok ) throw Object.assign(new Error(res.statusText + ' ' + url), { res });
+    else  return { getContentData: (asBinary) => asBinary ? res.arrayBuffer() : res.text(), }
   },
+  addStyle() {}
 }
 
-// evaluation viewer
-let EvaluationViewer = {
-  name: 'EvaluationViewer',
-  template: '#evaluation-viewer-template',
-  props: [ 'evaluation' ],
+async function loadModules() {
+  Prompt = await loadModule('./js/prompt.vue', options)
+  Configuration = await loadModule('./js/configuration.vue', options)
+  CodeViewer = await loadModule('./js/code-viewer.vue', options)
+  Step = await loadModule('./js/step.vue', options)
+  Chain = await loadModule('./js/chain.vue', options)
+  ChainViewer = await loadModule('./js/chain-viewer.vue', options)
+  EvaluationViewer = await loadModule('./js/evaluation-viewer.vue', options)
 }
+
+loadModules()
 
 // init vue
 var vm = new Vue({
   el: '#app',
-  components: { Chain, CodeViewer },
   data: () => {
     return {
       configuration: {},
@@ -170,7 +93,6 @@ var vm = new Vue({
         this.isLoading = false
         this.historyIndex = 0
       }).catch(_ => {
-        this.isLoading = false
         this.showError('Error while resetting model.')
       })
     },
@@ -186,7 +108,7 @@ var vm = new Vue({
         },
       })
     },
-    request_overrides() {
+    requestOverrides() {
       return Object.entries(this.configuration).map(([key, value]) => `${key}=${value}`).join('&')
     },
     ask() {
@@ -194,7 +116,7 @@ var vm = new Vue({
       this.historyIndex = 0
       this.messages.push({ role: 'user', 'text': this.question })
       this.scrollDiscussion()
-      axios.get(`/ask?question=${this.question}&${this.request_overrides()}`).then(response => {
+      axios.get(`/ask?question=${this.question}&${this.requestOverrides()}`).then(response => {
         this.response = response.data
         this.messages.push({ role: 'assistant', 'text': this.response.answer, 'response': this.response })
         this.history.push(this.question)
@@ -243,7 +165,7 @@ var vm = new Vue({
       this.historyIndex = 0
       this.messages.push({ role: 'user', 'text': `Evaluate the response against ${this.eval_criteria.join(", ")}` })
       this.scrollDiscussion()
-      axios.get(`/evaluate/criteria?answer=${response.answer}&criteria=${this.eval_criteria.join(",")}&${this.request_overrides()}`).then(response => {
+      axios.get(`/evaluate/criteria?answer=${response.answer}&criteria=${this.eval_criteria.join(",")}&${this.requestOverrides()}`).then(response => {
         this.response = response.data
         this.messages.push({ role: 'evaluator', 'text': this.response.answer, 'response': this.response })
         this.question = null
@@ -251,7 +173,6 @@ var vm = new Vue({
         this.scrollDiscussion()
         this.showEvalCrit(response.data)
       }).catch(_ => {
-        this.isLoading = false
         this.showError('Error while evaluating answer.')
       })
     },
@@ -284,14 +205,13 @@ var vm = new Vue({
             this.historyIndex = 0
             this.messages.push({ role: 'user', 'text': 'Evaluate the response' })
             this.scrollDiscussion()
-              axios.get(`/evaluate/qa?question=${response.question}&answer=${response.answer}&reference=${value}&${this.request_overrides()}`).then(response => {
+              axios.get(`/evaluate/qa?question=${response.question}&answer=${response.answer}&reference=${value}&${this.requestOverrides()}`).then(response => {
               this.response = response.data
               this.messages.push({ role: 'evaluator', 'text': this.response.answer, 'response': this.response })
               this.question = null
               this.isLoading = false
               this.scrollDiscussion()
             }).catch(_ => {
-              this.isLoading = false
               this.showError('Error while comparing answer.')
             })
           }
