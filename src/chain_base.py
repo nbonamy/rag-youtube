@@ -97,7 +97,17 @@ class ChainBase:
       if combine_chain is not None:
         
         # llm
-        prompts['llm'] = combine_chain.llm_chain.prompt.template,
+        try:
+          prompts['llm'] = combine_chain.llm_chain.prompt.template,
+        except:
+          pass
+
+        # llm
+        try:
+          key = 'initial_llm' if 'llm' in prompts else 'llm'
+          prompts[key] = combine_chain.initial_llm_chain.prompt.template,
+        except:
+          pass
 
         # collapse
         try:
@@ -108,6 +118,12 @@ class ChainBase:
         # combine
         try:
           prompts['combine'] = combine_chain.combine_document_chain.llm_chain.prompt.template
+        except:
+          pass
+
+        # refine
+        try:
+          prompts['refine'] = combine_chain.refine_llm_chain.prompt.template
         except:
           pass
       

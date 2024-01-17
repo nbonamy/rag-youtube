@@ -7,7 +7,7 @@
           <b-select v-model="configuration.ollama_model" :expanded="true">
             <option v-for="model in models"
               :value="model.name"
-              :key="model.digest">
+              :key="model.name">
               {{ model.name }}
             </option>
           </b-select>
@@ -23,6 +23,8 @@
           <b-select v-model="configuration.doc_chain_type" :expanded="true">
             <option value="stuff">Stuff</option>
             <option value="map_reduce">MapReduce</option>
+            <option value="refine">Refine</option>
+            <option value="map_rerank">MapRerank</option>
           </b-select>
         </b-field>
         <b-field label="Search Type">

@@ -96,11 +96,13 @@ class CallbackHandler(BaseCallbackHandler):
       run.end()
 
   def on_llm_start(self, serialized: dict, prompts: list, run_id: UUID, parent_run_id: UUID, **kwargs) -> None:
-    print(f'[chain] llm starting ("{prompts[0][0:64]}...")')
+    prompt=prompts[0]
+    digest=prompt.split('\n')[0][0:64].strip()
+    print(f'[chain] llm starting ("{digest}...")')
     parent = self.__get_step(parent_run_id)
     parent.add_step(ChainStep(
       run_id, 'llm', serialized, auto_start=False,
-      prompt=prompts[0], input_tokens=self.__count_tokens(prompts[0]),
+      prompt=prompt, input_tokens=self.__count_tokens(prompt),
       response=None, output_tokens=0,
       time_1st_token=None, tokens_per_sec=None
     ))
