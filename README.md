@@ -19,7 +19,12 @@ YouTube Data API: You need a Google Cloud account and a project set up in the Go
 
 Get the video ID of any of the videos of the channel you want to analyze. You can extract this directly from the URL. For instance in `https://www.youtube.com/watch?v=AS2m2rRn9Cw&t=211s` the video ID is `AS2m2rRn9Cw`.
 
-You also need [Ollama](https://ollama.ai) installed with one model installed. Mistral or LLama2 are preferred.
+You also need [Ollama](https://ollama.ai) installed with one model installed. Mistral or LLama2 are preferred:
+
+```
+ollama pull mistral:latest
+ollama pull llama2:latest
+```
 
 ## Setup
 
