@@ -66,8 +66,8 @@ def cost():
 @app.route('/ask')
 def ask():
 
-  with open('response.json', 'r') as f:
-    return json.loads(f.read())
+  # with open('response.json', 'r') as f:
+  #   return json.loads(f.read())
   
   # do it
   question = request.query.question
