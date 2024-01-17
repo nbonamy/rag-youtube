@@ -88,7 +88,7 @@ For the embeddings model, default is to use a [HuggingFace Sentence Transformers
 
 For enumerated options, acceptables values are:
 - `chain_type`: `base`, `sources`, `conversation`
-- `doc_chain_type`: `stuff`, `map_reduce`. `refine` and `map_rerank` have not been tested
+- `doc_chain_type`: `stuff`, `map_reduce`, `refine`, `map_rerank`
 - `search_type`: `similarity`, `similarity_score_threshold`, `mmr`
 
 ## Debugging
