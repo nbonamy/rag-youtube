@@ -2,7 +2,7 @@
   <div class="modal-card" style="width: 800px; margin: 0 auto;">
     <header class="modal-card-head"><p class="modal-card-title">{{ title }}</p></header>
     <section class="modal-card-body">
-      <pre style="white-space: pre-wrap;">{{ code }}</pre>
+      <pre>{{ code }}</pre>
     </section>
     <footer class="modal-card-foot">
       <b-button label="Close" @click="$parent.close()" />
@@ -15,3 +15,11 @@ export default {
   props: [ 'code', 'title' ],
 }
 </script>
+
+<style scoped>
+
+pre {
+	white-space: pre-wrap;
+}
+
+</style>

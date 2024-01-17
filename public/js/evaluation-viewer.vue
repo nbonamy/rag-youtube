@@ -22,3 +22,15 @@ export default {
   props: [ 'evaluation' ],
 }
 </script>
+
+<style scoped>
+
+.evaluation th, .evaluation td {
+	padding: 2px 8px;
+}
+
+.evaluation .criteria {
+	text-align: right;
+}
+
+</style>
