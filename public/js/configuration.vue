@@ -43,10 +43,10 @@
         <b-field label="Documents Count" horizontal>
           <b-input type="number" v-model="configuration.document_count" min="1"></b-input>
         </b-field>
-        <b-field>
+        <b-field label="" horizontal>
           <b-checkbox v-model="configuration.custom_prompts">Use Custom Prompts</b-checkbox>
         </b-field>
-        <b-field>
+        <b-field label="" horizontal>
           <b-checkbox v-model="configuration.return_sources">Return Sources</b-checkbox>
         </b-field>
       </section>
@@ -66,6 +66,6 @@ export default {
 <style>
 .field-label {
   white-space: nowrap;
-  min-width: 160px;
+  flex-basis: 160px;
 }
 </style>
