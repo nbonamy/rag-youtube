@@ -57,6 +57,7 @@ class AgentBase:
     self.vectorstore=Chroma(persist_directory=self.config.db_persist_directory(), embedding_function=self.embeddings)
 
   def _build_llm(self, parameters: ChainParameters) -> Ollama:
+    print(f'[agent] building LLM with model={parameters.ollama_model}, temperature={parameters.llm_temperature}')
     return Ollama(
       base_url=self.config.ollama_url(),
       model=parameters.ollama_model,

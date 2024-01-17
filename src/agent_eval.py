@@ -4,6 +4,7 @@ from callback import CallbackHandler
 from chain_base import ChainParameters
 from chain_eval_qa import QAEvalChain
 from chain_eval_criteria import CriteriaEvalChain
+from langchain_community.llms import Ollama
 
 class Evaluator(AgentBase):
 
@@ -77,4 +78,7 @@ class Evaluator(AgentBase):
 
     # done
     return res
-  
+
+  def _build_llm(self, parameters: ChainParameters) -> Ollama:
+    parameters.llm_temperature = 0.0
+    return super()._build_llm(parameters)

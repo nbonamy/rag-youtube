@@ -62,7 +62,7 @@ class AgentQA(AgentBase):
     chain = self.__build_qa_chain(ollama, retriever, callback_handler, parameters)
 
     # now query
-    print(f'[agent] retrieving and prompting using {ollama.model} and {"custom" if parameters.custom_prompts else "default"} prompts')
+    print(f'[agent] retrieving and prompting using {"custom" if parameters.custom_prompts else "default"} prompts')
     res = chain.invoke(question)
 
     # extract sources
