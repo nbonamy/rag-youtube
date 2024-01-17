@@ -123,7 +123,7 @@ var vm = new Vue({
       axios.get(`/ask?question=${this.question}&${this.requestOverrides()}`).then(response => {
         this.response = response.data
         this.messages.push({ role: 'assistant', 'text': this.response.answer, 'response': this.response })
-        this.history.push(this.question)
+        this.addHistory(this.question)
         this.question = null
         this.isLoading = false
         this.scrollDiscussion()
@@ -232,9 +232,23 @@ var vm = new Vue({
         icon: 'alert-circle',
         iconPack: 'mdi'
       })
-    }
+    },
+    addHistory() {
+      if (this.history[this.history.length - 1] != this.question) {
+        this.history.push(this.question)
+        localStorage.setItem('history', JSON.stringify(this.history))
+      }
+    },
   },
   mounted() {
+
+    // load local data
+    let localHistory = localStorage.getItem('history')
+    if (localHistory) {
+      this.history = JSON.parse(localHistory)
+    }
+
+    // load remote data
     axios.get('/config').then(response => {
       this.configuration = response.data.configuration
     }).catch(_ => {
