@@ -18,9 +18,9 @@ class QAEvalChain(ChainBase):
     # build chain
     print(f'[chain] building llm evaluation chain')
     self.chain = LCQAEvalChain.from_llm(llm=llm)
-    self._dump_chain_prompts()
 
   def invoke(self, question, answer, reference):
+    self.callback.templates = self._get_chain_prompt_templates()
     return self.chain.invoke(input={
       'query': question,
       'result': answer,

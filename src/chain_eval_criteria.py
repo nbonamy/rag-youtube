@@ -31,7 +31,6 @@ class CriteriaEvalChain(ChainBase):
     # build chain
     print(f'[chain] building llm evaluation chain')
     self.chain = LLMChain(llm=llm, prompt=self._get_prompt(criteria))
-    self._dump_chain_prompts()
 
   def _get_prompt(self, criteria):
 

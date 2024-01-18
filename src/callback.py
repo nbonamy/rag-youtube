@@ -73,6 +73,7 @@ class CallbackHandler(BaseCallbackHandler):
     self.root = None
     self.outputs = None
     self.sources = None
+    self.templates = None
   
   def set_sources(self, sources: list) -> None:
     self.sources = sources
@@ -150,6 +151,7 @@ class CallbackHandler(BaseCallbackHandler):
       'answer': self.__final_answer(),
       'sources': self.sources,
       'chain': self.root.to_dict(),
+      'templates': self.templates,
       'parameters': self.parameters.to_dict(),
       'performance': {
         'total_time': int(self.root.ended_at - self.root.created_at),

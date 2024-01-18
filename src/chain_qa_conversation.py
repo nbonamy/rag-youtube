@@ -19,4 +19,3 @@ class QAChainConversational(ChainBase):
       return_source_documents=parameters.return_sources,
       combine_docs_chain_kwargs=self._get_prompt_kwargs(parameters),
     )
-    self._dump_chain_prompts()

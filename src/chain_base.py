@@ -35,6 +35,11 @@ class ChainBase:
     self.callback = None
 
   def invoke(self, prompt: str):
+
+    # get prompts
+    self.callback.templates = self._get_chain_prompt_templates()
+    
+    # now invoke
     return self.chain.invoke(
       input={ self._get_input_key(): prompt },
       config=RunnableConfig(callbacks=[self.callback])
@@ -46,23 +51,23 @@ class ChainBase:
   def _get_prompt_kwargs(self, parameters: ChainParameters):
     if parameters.custom_prompts:
       if parameters.doc_chain_type == 'stuff':
-        return { 'prompt': self._get_question_prompt() }
+        return { 'prompt': self.__get_question_prompt() }
       elif parameters.doc_chain_type == 'map_reduce':
         return {
-          'question_prompt': self._get_question_prompt(),
-          'combine_prompt': self._get_combine_prompt(),
+          'question_prompt': self.__get_question_prompt(),
+          'combine_prompt': self.__get_combine_prompt(),
         }
     return {}
   
-  def _get_question_prompt(self):
+  def __get_question_prompt(self):
     with open('prompts/base.txt', 'r') as f:
       return PromptTemplate(input_variables=['context', 'question'], template=f.read())
 
-  def _get_combine_prompt(self):
+  def __get_combine_prompt(self):
     with open('prompts/combine.txt', 'r') as f:
       return PromptTemplate(input_variables=['summaries', 'question'], template=f.read())
 
-  def _dump_chain_prompts(self):
+  def _get_chain_prompt_templates(self):
 
     try:
 
@@ -129,9 +134,9 @@ class ChainBase:
         except:
           pass
       
-      # dump
-      utils.dumpj(prompts, 'chain_templates.json')
+      # done
+      return prompts
 
     except:
-      print('[chain] failed to dump chain prompts')
-      pass
+      print('[chain] failed to get chain prompts')
+      return {}

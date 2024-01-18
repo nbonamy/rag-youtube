@@ -19,7 +19,6 @@ class QAChainBaseWithSources(ChainBase):
       #return_source_documents=config.return_sources(),
       chain_type_kwargs=self._get_prompt_kwargs(parameters),
     )
-    self._dump_chain_prompts()
 
   def _get_prompt_kwargs(self, parameters):
     if not parameters.custom_prompts or parameters.doc_chain_type != 'stuff':

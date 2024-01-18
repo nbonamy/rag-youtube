@@ -18,7 +18,6 @@ class QAChainBase(ChainBase):
       return_source_documents=parameters.return_sources,
       chain_type_kwargs=self._get_prompt_kwargs(parameters)
     )
-    self._dump_chain_prompts()
 
   def _get_input_key(self):
     return 'query'
