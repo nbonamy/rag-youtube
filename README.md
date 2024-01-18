@@ -80,7 +80,7 @@ To start over, simply delete the `db` folder and run the script.
 ./src/app.py
 ```
 
-Then access `http://localhost:5555`.
+Then access [http://localhost:5555](http://localhost:5555).
 
 ## Configuration
 
@@ -101,3 +101,13 @@ You have the options to use custom prompts. Those are located in the `prompts` f
 ## Debugging
 
 You can enable langchain debugging through configuration. In that case, it is recommended to redirect the output to a text file and replace the following regex `[ \t]*"context": \[[\d, \t\n]*\],\n` with nothing to clear up the trace.
+
+## Monitoring
+
+This is a WIP prototype. To enable it, you need to create the database:
+
+```
+make createdb
+```
+
+Then access [http://localhost:5555/dashboard.html](http://localhost:5555/dashboard.html).
