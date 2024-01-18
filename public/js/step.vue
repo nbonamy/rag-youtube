@@ -69,6 +69,10 @@ export default {
 	font-size: 13px;
 }
 
+.step:first-of-type {
+  margin-top: 0;
+}
+
 .step .header {
 	border: 1px solid black;
 	border-radius: 4px;

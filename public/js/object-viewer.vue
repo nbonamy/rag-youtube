@@ -39,6 +39,10 @@ export default {
   margin-bottom: 16px;
 }
 
+.attribute:first-of-type {
+  margin-top: 0;
+}
+
 .attribute * {
   padding: 4px 8px;
   font-size: 10.5pt;
