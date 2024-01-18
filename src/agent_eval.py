@@ -10,9 +10,15 @@ class Evaluator(AgentBase):
 
   def __init__(self, config):
     super().__init__(config)
-  
-  def evaluate_criteria(self, answer: str, criteria: list, overrides: dict) -> dict:
+    self._build_database()
 
+  def evaluate_criteria(self, run_id: str, answer: str, criteria: list, overrides: dict) -> dict:
+
+    # fetch answer
+    if answer is None or len(answer) == 0:
+      run = self.database.get_run(run_id)
+      answer = run['trace']['answer']
+    
     # log
     print(f'[eval] evaluating {answer[0:64]} against {", ".join(criteria)}')
 
@@ -50,12 +56,25 @@ class Evaluator(AgentBase):
     # make sure we have all criteria
     if len(criteria) != len(res['evaluation'].keys()):
       res['evaluation'] = {}
+
+    # save it
+    try:
+      self.database.set_run_eval_crit(run_id, res)
+    except Exception as e:
+      print(f'[agent] failed to update run: {e}')
+      pass
     
     # done
     return res
   
-  def evaluate_qa(self, question: str, answer: str, reference: str, overrides: dict) -> dict:
+  def evaluate_qa(self, run_id: str, question: str, answer: str, reference: str, overrides: dict) -> dict:
 
+    # fetch run
+    if question is None or len(question) == 0 or answer is None or len(answer) == 0:
+      run = self.database.get_run(run_id)
+      question = run['trace']['question']
+      answer = run['trace']['answer']
+    
     # log
     print(f'[eval] evaluating {answer[0:64]}')
 
@@ -76,6 +95,13 @@ class Evaluator(AgentBase):
     # done
     res = callback_handler.to_dict()
 
+    # save it
+    try:
+      self.database.set_run_eval_qa(run_id, res)
+    except Exception as e:
+      print(f'[agent] failed to update run: {e}')
+      pass
+    
     # done
     return res
 

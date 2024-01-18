@@ -43,6 +43,8 @@
 							<th>Model</th>
 							<th>Total time</th>
 							<th>Tokens</th>
+							<th>Evaluation Crit</th>
+							<th>Evaluation QA</th>
 							<th>Actions</th>
 						</tr>
 					</thead>
@@ -51,14 +53,36 @@
 							<td class="pre">{{ run['id'].substr(0, 16) }}...</td>
 							<td>
 								<span class="action view" @click="showQA(run)"><b-icon icon="message-outline" size="is-small"></b-icon></span>
-								<span class="action inspect" @click="showChain(run)"><b-icon icon="link-variant" size="is-small"></b-icon></span>
-								<span class="action code" @click="showCode(run)"><b-icon icon="code-braces" size="is-small"></b-icon></span>
+								<span class="action inspect" @click="showChain(run.trace)"><b-icon icon="link-variant" size="is-small"></b-icon></span>
+								<span class="action code" @click="showCode(run.trace)"><b-icon icon="code-braces" size="is-small"></b-icon></span>
 							</td>
 							<td>{{ run.date }}</td>
 							<td>{{ run.type }}</td>
 							<td>{{ run.trace.parameters.ollama_model }}</td>
 							<td :class="timeClass(run.total_time)">{{ run.total_time }} ms</td>
 							<td>{{ run.input_tokens }} + {{ run.output_tokens }} = {{ run.total_tokens }}</td>
+							<td>
+								<span v-if="run.evaluation_crit_trace">
+									<span class="action view" @click="showEvalCrit(run.evaluation_crit_trace)"><b-icon icon="message-star-outline" size="is-small"></b-icon></span>
+									<span class="action inspect" @click="showChain(run.evaluation_crit_trace)"><b-icon icon="link-variant" size="is-small"></b-icon></span>
+									<span class="action code" @click="showCode(run.evaluation_crit_trace)"><b-icon icon="code-braces" size="is-small"></b-icon></span>
+									<span :class="evalCritClass(run)"><b-icon icon="star" size="is-small"></b-icon> {{ getEvalCrit(run) }}</span>
+								</span>
+								<span v-else>
+									<span class="action eval" @click="runEvalCrit(run)"><b-icon icon="star-outline" size="is-small"></b-icon></span>
+								</span>
+							</td>
+							<td>
+								<span v-if="run.evaluation_qa_trace">
+									<span class="action view" @click="showEvalQa(run.evaluation_qa_trace)"><b-icon icon="message-star-outline" size="is-small"></b-icon></span>
+									<span class="action inspect" @click="showChain(run.evaluation_qa_trace)"><b-icon icon="link-variant" size="is-small"></b-icon></span>
+									<span class="action code" @click="showCode(run.evaluation_qa_trace)"><b-icon icon="code-braces" size="is-small"></b-icon></span>
+									<span :class="evalQAClass(run)">{{ getEvalQA(run) }}</span>
+								</span>
+								<span v-else>
+									<span class="action eval" @click="runEvalQA(run)"><b-icon icon="star-outline" size="is-small"></b-icon></span>
+								</span>
+							</td>
 							<td>
 								<span class="action suppress" @click="deleteRun(run)"><b-icon icon="trash-can-outline" size="is-small"></b-icon></span>
 							</td>

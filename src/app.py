@@ -83,17 +83,18 @@ def ask():
 def eval(method):
 
   # get data
+  run_id = request.query.id
   answer = request.query.answer
   overrides = {k:v[0] for k,v in request.query.dict.items()}
 
   # do it
   if method == 'criteria':
     criteria = request.query.criteria.split(',')
-    result = evaluator.evaluate_criteria(answer, criteria, overrides)
+    result = evaluator.evaluate_criteria(run_id, answer, criteria, overrides)
   elif method == 'qa':
     question = request.query.question
     reference = request.query.reference
-    result = evaluator.evaluate_qa(question, answer, reference, overrides)
+    result = evaluator.evaluate_qa(run_id, question, answer, reference, overrides)
   else:
     raise Exception(f'Unknown evaluation method {method}')
 

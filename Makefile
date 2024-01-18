@@ -7,6 +7,6 @@ run:
 	watchfiles ./src/app.py src rag-youtube.conf
 
 createdb:
-	@-rm -f rag.db > /dev/null 2>&1
-	sqlite3 rag.db < schema.sql
+	@-rm -f rag-youtube.db > /dev/null 2>&1
+	sqlite3 rag-youtube.db < schema.sql
 

@@ -24,13 +24,19 @@ body {
   letter-spacing: -1px;
 }
 
-.dashboard table td.is-danger {
+.dashboard table .is-danger {
   color: darkred;
   font-weight: bold;
 }
 
-.dashboard table td.is-warning {
+.dashboard table .is-warning {
   color: darkgoldenrod;
+  font-weight: bold;
+}
+
+.dashboard table .is-success {
+  color: darkgreen;
+  font-weight: bold;
 }
 
 .dashboard table td .action {

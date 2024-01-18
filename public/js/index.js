@@ -13,11 +13,7 @@ var vm = new Vue({
       historyIndex: 0,
       response: null,
       isLoading: false,
-      eval_criteria: [
-        'helpful',
-        'detailed',
-        'relevant to software engineering',
-      ],
+      evalCriteria: defaultEvalCriteria,
     }
   },
   computed: {
@@ -98,9 +94,9 @@ var vm = new Vue({
     evalCrit(response) {
       this.isLoading = true
       this.historyIndex = 0
-      this.messages.push({ role: 'user', 'text': `Evaluate the response against ${this.eval_criteria.join(", ")}` })
+      this.messages.push({ role: 'user', 'text': `Evaluate the response against ${this.evalCriteria.join(", ")}` })
       this.scrollDiscussion()
-      axios.get(`/evaluate/criteria?answer=${response.answer}&criteria=${this.eval_criteria.join(",")}&${this.requestOverrides()}`).then(response => {
+      axios.get(`/evaluate/criteria?id=${response.chain.id}&answer=${response.answer}&criteria=${this.evalCriteria.join(",")}&${this.requestOverrides()}`).then(response => {
         this.response = response.data
         this.messages.push({ role: 'evaluator', 'text': this.response.answer, 'response': this.response })
         this.question = null
@@ -120,7 +116,7 @@ var vm = new Vue({
         this.historyIndex = 0
         this.messages.push({ role: 'user', 'text': 'Evaluate the response' })
         this.scrollDiscussion()
-          axios.get(`/evaluate/qa?question=${response.question}&answer=${response.answer}&reference=${value}&${this.requestOverrides()}`).then(response => {
+          axios.get(`/evaluate/qa?id=${response.chain.id}&question=${response.question}&answer=${response.answer}&reference=${value}&${this.requestOverrides()}`).then(response => {
           this.response = response.data
           this.messages.push({ role: 'evaluator', 'text': this.response.answer, 'response': this.response })
           this.question = null

@@ -2,6 +2,7 @@
 import config
 import requests
 import langchain
+from database import Database
 from chain_base import ChainParameters
 from langchain_community.llms import Ollama
 from langchain_community.embeddings import OpenAIEmbeddings, OllamaEmbeddings, HuggingFaceEmbeddings
@@ -33,6 +34,9 @@ class AgentBase:
       return util.cos_sim(e1, e2)
     else:
       return util.dot_score(e1, e2)
+
+  def _build_database(self):
+    self.database = Database(self.config)
 
   def _build_embedder(self) -> None:
     if self.embeddings is not None:

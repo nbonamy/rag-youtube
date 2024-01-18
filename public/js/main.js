@@ -42,3 +42,9 @@ async function loadModules() {
 }
 
 loadModules()
+
+const defaultEvalCriteria = [
+  'helpful',
+  'detailed',
+  'relevant to software engineering',
+]

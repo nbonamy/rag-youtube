@@ -5,7 +5,9 @@ CREATE TABLE IF NOT EXISTS `runs` (
   `total_time` int(11) NOT NULL,
   `input_tokens` int(11) NOT NULL,
   `output_tokens` int(11) NOT NULL,
-  `trace` blob NOT NULL
+  `trace` blob NOT NULL,
+  'evaluation_crit_trace' blob NULL,
+  `evaluation_qa_trace` blob NULL
 );
 
 CREATE INDEX `runs_created_at` ON `runs`(`created_at`);

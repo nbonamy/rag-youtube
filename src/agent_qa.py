@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import html
 import utils
-from database import Database
 from agent_base import AgentBase
 from callback import CallbackHandler
 from chain_base import ChainParameters
@@ -16,8 +15,8 @@ class AgentQA(AgentBase):
     super().__init__(config)
     self._build_embedder()
     self._build_vectorstore()
+    self._build_database()
     self.__build_memory()
-    self.__build_database()
   
   def reset(self):
     self.memory.clear()
@@ -74,7 +73,8 @@ class AgentQA(AgentBase):
     # save
     try:
       self.database.add_run(callback_handler.to_dict(), 'qa')
-    except:
+    except Exception as e:
+      print(f'[agent] failed to save run: {e}')
       pass
 
     # done
@@ -91,9 +91,6 @@ class AgentQA(AgentBase):
       self.memory = ConversationSummaryMemory(llm=llm, memory_key='chat_history', max_len=50, return_messages=True, output_key='answer')
     else:
       raise Exception(f'Unknown memory type "{memory_type}"')
-
-  def __build_database(self):
-    self.database = Database(self.config)
 
   def __build_qa_chain(self, llm, retriever, callback, parameters: ChainParameters):
     if parameters.chain_type == 'base':
