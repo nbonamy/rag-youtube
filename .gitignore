@@ -167,3 +167,4 @@ captions/
 db/
 *.json
 *.conf
+rag.db

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<link rel="icon" type="image/ico" href="/img/icon.png">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="https://cdn.materialdesignicons.com/7.4.47/css/materialdesignicons.min.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.4/css/bulma.min.css">
+	<link rel="stylesheet" href="https://unpkg.com/buefy/dist/buefy.min.css">
+	<link rel="stylesheet" href="css/main.css">
+	<link rel="stylesheet" href="css/dashboard.css">
+	<script defer src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+	<script defer src="https://cdn.jsdelivr.net/npm/vue3-sfc-loader/dist/vue2-sfc-loader.js"></script>
+	<script defer src="https://cdn.jsdelivr.net/npm/vue-router@3.1.3/dist/vue-router.min.js"></script>
+	<script defer src="https://unpkg.com/buefy/dist/buefy.min.js"></script>
+	<script defer src="https://unpkg.com/axios/dist/axios.min.js"></script>
+	<script defer src="js/main.js"></script>
+	<script defer src="js/dashboard.js"></script>
+	<title>RAG YouTube - Ask me anything!</title>
+</head>
+
+<body>
+	<div id="app">
+		<b-loading :is-full-page="true" :active.sync="isLoading" :can-cancel="false"></b-loading>
+		<header class="hero">
+			<div class="hero-body">
+				<div class="container">
+					<h1 class="title">rag-youtube</h1>
+					<h2 class="subtitle">ask anything to your favorite channel!</h2>
+				</div>
+			</div>
+		</header>
+		<main>
+			<section class="section dashboard">
+				<table>
+					<thead>
+						<tr>
+							<th>ID</th>
+							<th>View</th>
+							<th>Execution</th>
+							<th>Type</th>
+							<th>Model</th>
+							<th>Total time</th>
+							<th>Tokens</th>
+							<th>Actions</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr v-for="run in runs" :key="run['id']">
+							<td class="pre">{{ run['id'].substr(0, 16) }}...</td>
+							<td>
+								<span class="action inspect" @click="showChain(run)"><b-icon icon="link-variant" size="is-small"></b-icon></span>
+								<span class="action code" @click="showCode(run)"><b-icon icon="code-braces" size="is-small"></b-icon></span>
+							</td>
+							<td>{{ run.date }}</td>
+							<td>{{ run.type }}</td>
+							<td>{{ run.trace.parameters.ollama_model }}</td>
+							<td :class="timeClass(run.total_time)">{{ run.total_time }} ms</td>
+							<td>{{ run.input_tokens }} + {{ run.output_tokens }} = {{ run.total_tokens }}</td>
+							<td>
+								<span class="action suppress" @click="deleteRun(run)"><b-icon icon="trash-can-outline" size="is-small"></b-icon></span>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</section>
+		</main>
+	</div>
+
+</body>
+
+</html>

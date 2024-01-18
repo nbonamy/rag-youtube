@@ -3,6 +3,7 @@
 import json
 import utils
 import consts
+from database import Database
 from agent_qa import AgentQA
 from agent_eval import Evaluator
 from config import Config
@@ -20,6 +21,7 @@ app.config.update({
 
 agent = AgentQA(app.config.get('config'))
 evaluator = Evaluator(app.config.get('config'))
+database = Database(app.config.get('config'))
 
 @app.route('/config')
 def config():
@@ -97,6 +99,15 @@ def eval(method):
 
   # done
   return result
+
+@app.route('/runs')
+def get_runs():
+  return { 'runs': database.get_runs() }
+
+@app.delete('/runs/<id>')
+def delete_run(id):
+  database.delete_run(id)
+  return { 'status': 'ok' }
 
 @app.route('/<filepath:path>')
 def server_static(filepath):

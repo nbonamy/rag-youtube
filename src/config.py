@@ -21,6 +21,9 @@ class Config:
     value = self.__get_value(CONFIG_SECTION_GENERAL, 'debug') or consts.DEFAULT_DEBUG
     return utils.is_true(value)
 
+  def database_path(self):
+    return self.__get_value(CONFIG_SECTION_GENERAL, 'database_path') or consts.DEFAULT_DATABASE_PATH
+
   def ollama_url(self):
     return self.__get_value(CONFIG_SECTION_GENERAL, 'ollama_url') or consts.DEFAULT_OLLAMA_URL
   

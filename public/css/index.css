@@ -1,13 +1,4 @@
 
-body {
-	width: 900px;
-	margin: 0 auto;
-}
-
-.modal-card-title {
-	font-weight: bold;
-}
-
 .chat {
 	padding-top: 0;
 }
@@ -17,21 +8,6 @@ body {
 	position: relative;
 	top: -16px;
 	cursor: pointer;
-}
-
-.chat .header .thumbnail {
-	float: left;
-	height: 64px;
-	margin-right: 16px;
-}
-
-.chat .header .title {
-	font-size: 1.25rem;
-	font-weight: bold;
-	padding-top: 20px;
-	overflow: hidden;
-	white-space:nowrap;
-	text-overflow:ellipsis;
 }
 
 .chat .prompt {

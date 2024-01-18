@@ -4,6 +4,7 @@ CONFIG_PATH = './rag-youtube.conf'
 
 # defaults
 DEFAULT_DEBUG = 'false'
+DEFAULT_DATABASE_PATH = 'rag-youtube.db'
 DEFAULT_OLLAMA_URL = 'http://localhost:11434'
 DEFAULT_OLLAMA_MODEL = 'mistral:latest'
 DEFAULT_LLM_TEMPERATURE = 0.8

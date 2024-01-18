@@ -1,0 +1,38 @@
+
+body {
+  width: 90%;
+}
+
+.dashboard table {
+  margin: 0 auto;
+  border-collapse: separate;
+  border-spacing: 8px 0px;
+  width: 90%;
+}
+
+.dashboard table th{
+  border-bottom: 1px solid black;
+}
+
+.dashboard table th, .dashboard table td {
+  padding: 4px 8px;
+  white-space: nowrap;
+}
+
+.dashboard table td.pre {
+  font-family: monospace;
+  letter-spacing: -1px;
+}
+
+.dashboard table td.is-danger {
+  color: darkred;
+  font-weight: bold;
+}
+
+.dashboard table td.is-warning {
+  color: darkgoldenrod;
+}
+
+.dashboard table td .action {
+  cursor: pointer;
+}

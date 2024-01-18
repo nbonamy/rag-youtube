@@ -1,0 +1,24 @@
+
+body {
+	width: 900px;
+	margin: 0 auto;
+}
+
+.modal-card-title {
+	font-weight: bold;
+}
+
+.section .header .thumbnail {
+	float: left;
+	height: 64px;
+	margin-right: 16px;
+}
+
+.section .header .title {
+	font-size: 1.25rem;
+	font-weight: bold;
+	padding-top: 20px;
+	overflow: hidden;
+	white-space:nowrap;
+	text-overflow:ellipsis;
+}
