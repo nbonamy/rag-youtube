@@ -50,6 +50,7 @@
 						<tr v-for="run in runs" :key="run['id']">
 							<td class="pre">{{ run['id'].substr(0, 16) }}...</td>
 							<td>
+								<span class="action view" @click="showQA(run)"><b-icon icon="message-outline" size="is-small"></b-icon></span>
 								<span class="action inspect" @click="showChain(run)"><b-icon icon="link-variant" size="is-small"></b-icon></span>
 								<span class="action code" @click="showCode(run)"><b-icon icon="code-braces" size="is-small"></b-icon></span>
 							</td>

@@ -21,15 +21,22 @@
 export default {
   props: [ 'evaluation' ],
   show: function(vue, evaluation) {
-    vue.$buefy.modal.open({
-      parent: vue,
-      trapFocus: true,
-      hasModalCard: true,
-      component: EvaluationViewer,
-      props: {
-        evaluation: evaluation,
-      }
-    })
+    if (Object.keys(evaluation).length > 0) {
+      vue.$buefy.modal.open({
+        parent: vue,
+        trapFocus: true,
+        hasModalCard: true,
+        component: EvaluationViewer,
+        props: {
+          evaluation: evaluation,
+        }
+      })
+    } else {
+      vue.$buefy.dialog.alert({
+        title: 'Answer Evaluation',
+        message: evaluation.replace('\n', '<br>'),
+      })
+    }
   }
 }
 </script>

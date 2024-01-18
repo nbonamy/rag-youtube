@@ -112,14 +112,7 @@ var vm = new Vue({
       })
     },
     showEvalCrit(response) {
-      if (Object.keys(response.evaluation).length > 0) {
-        EvaluationViewer.show(this, response.evaluation)
-      } else {
-        this.$buefy.dialog.alert({
-          title: 'Answer Evaluation',
-          message: response.answer.replace('\n', '<br>'),
-        })
-      }
+      EvaluationViewer.show(this, response.evaluation)
     },
     evalQA(response) {
       Prompt.prompt(this, 'Enter reference text', (value) => {

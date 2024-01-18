@@ -17,6 +17,12 @@ var vm = new Vue({
       else if (time > 5000) return 'is-warning'
       else return 'is-success'
     },
+    showQA(run) {
+      ObjectViewer.show(this, 'Question/Answer', {
+        'question': run.trace.question,
+        'answer': run.trace.answer
+      })
+    },
     showCode(run) {
       CodeViewer.show(this, 'Chain', run.trace)
     },
