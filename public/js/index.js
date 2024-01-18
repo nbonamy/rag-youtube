@@ -34,6 +34,7 @@ async function loadModules() {
   Prompt = await loadModule('./js/prompt.vue', options)
   Configuration = await loadModule('./js/configuration.vue', options)
   CodeViewer = await loadModule('./js/code-viewer.vue', options)
+  ObjectViewer = await loadModule('./js/object-viewer.vue', options)
   Step = await loadModule('./js/step.vue', options)
   Chain = await loadModule('./js/chain.vue', options)
   ChainViewer = await loadModule('./js/chain-viewer.vue', options)

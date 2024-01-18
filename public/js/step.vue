@@ -44,15 +44,14 @@ export default {
     showCode() {
       let clone = JSON.parse(JSON.stringify(this.step))
       delete clone.steps
-      this.code = JSON.stringify(clone, null, 2)
       this.$buefy.modal.open({
         parent: this,
         trapFocus: true,
         hasModalCard: true,
-        component: CodeViewer,
+        component: ObjectViewer,
         props: {
           title: this.title,
-          code: clone,
+          obj: clone,
         },
       })
     },
