@@ -60,6 +60,18 @@
 <script>
 export default {
   props: [ 'configuration', 'models' ],
+  show: function(vue, models, configuration) {
+    vue.$buefy.modal.open({
+      parent: vue,
+      trapFocus: true,
+      hasModalCard: true,
+      component: Configuration,
+      props: {
+        models: models,
+        configuration: configuration
+      },
+    })
+  }
 }
 </script>
 

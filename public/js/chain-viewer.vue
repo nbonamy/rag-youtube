@@ -29,5 +29,16 @@ export default {
       return formatPerformance(this.chain.performance, ALL_TOKENS)
     }
   },
+  show: function(vue, chain) {
+    vue.$buefy.modal.open({
+      parent: vue,
+      trapFocus: true,
+      hasModalCard: true,
+      component: ChainViewer,
+      props: {
+        chain: chain,
+      },
+    })
+  }
 }
 </script>

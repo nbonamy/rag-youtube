@@ -18,30 +18,13 @@ var vm = new Vue({
       else return 'is-success'
     },
     showCode(run) {
-      this.$buefy.modal.open({
-        parent: this,
-        trapFocus: true,
-        hasModalCard: true,
-        component: CodeViewer,
-        props: {
-          title: 'Chain',
-          code: run.trace,
-        },
-      })
+      CodeViewer.show(this, 'Chain', run.trace)
     },
     showChain(run) {
       let chain = run.trace
       chain.chain.prompt = chain.question
       chain.chain.response = chain.answer
-      this.$buefy.modal.open({
-        parent: this,
-        trapFocus: true,
-        hasModalCard: true,
-        component: ChainViewer,
-        props: {
-          chain: chain,
-        },
-      })
+      ChainViewer.show(this, chain)
     },
     deleteRun(run) {
       this.$buefy.dialog.confirm({

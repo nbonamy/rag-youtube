@@ -58,16 +58,7 @@ var vm = new Vue({
       })
     },
     editConfiguration() {
-      this.$buefy.modal.open({
-        parent: this,
-        trapFocus: true,
-        hasModalCard: true,
-        component: Configuration,
-        props: {
-          models: this.models,
-          configuration: this.configuration
-        },
-      })
+      Configuration.show(this, this.models, this.configuration)
     },
     requestOverrides() {
       return Object.entries(this.configuration).map(([key, value]) => `${key}=${value}`).join('&')
@@ -96,30 +87,13 @@ var vm = new Vue({
       })
     },
     showCode(response) {
-      this.$buefy.modal.open({
-        parent: this,
-        trapFocus: true,
-        hasModalCard: true,
-        component: CodeViewer,
-        props: {
-          title: 'Chain',
-          code: response,
-        },
-      })
+      CodeViewer.show(this, 'Chain', response)
     },
     showChain(response) {
       let chain = response
       chain.chain.prompt = chain.question
       chain.chain.response = chain.answer
-      this.$buefy.modal.open({
-        parent: this,
-        trapFocus: true,
-        hasModalCard: true,
-        component: ChainViewer,
-        props: {
-          chain: chain,
-        },
-      })
+      ChainViewer.show(this, chain)
     },
     evalCrit(response) {
       this.isLoading = true
@@ -139,13 +113,7 @@ var vm = new Vue({
     },
     showEvalCrit(response) {
       if (Object.keys(response.evaluation).length > 0) {
-        this.$buefy.modal.open({
-          parent: this,
-          trapFocus: true,
-          hasModalCard: true,
-          component: EvaluationViewer,
-          props: { 'evaluation': response.evaluation },
-        })
+        EvaluationViewer.show(this, response.evaluation)
       } else {
         this.$buefy.dialog.alert({
           title: 'Answer Evaluation',
@@ -154,29 +122,20 @@ var vm = new Vue({
       }
     },
     evalQA(response) {
-      this.$buefy.modal.open({
-        parent: this,
-        trapFocus: true,
-        hasModalCard: true,
-        component: Prompt,
-        props: {
-          title: 'Enter reference text',
-          callback: (value) => {
-            this.isLoading = true
-            this.historyIndex = 0
-            this.messages.push({ role: 'user', 'text': 'Evaluate the response' })
-            this.scrollDiscussion()
-              axios.get(`/evaluate/qa?question=${response.question}&answer=${response.answer}&reference=${value}&${this.requestOverrides()}`).then(response => {
-              this.response = response.data
-              this.messages.push({ role: 'evaluator', 'text': this.response.answer, 'response': this.response })
-              this.question = null
-              this.isLoading = false
-              this.scrollDiscussion()
-            }).catch(_ => {
-              this.showError('Error while comparing answer.')
-            })
-          }
-        }
+      Prompt.prompt(this, 'Enter reference text', (value) => {
+        this.isLoading = true
+        this.historyIndex = 0
+        this.messages.push({ role: 'user', 'text': 'Evaluate the response' })
+        this.scrollDiscussion()
+          axios.get(`/evaluate/qa?question=${response.question}&answer=${response.answer}&reference=${value}&${this.requestOverrides()}`).then(response => {
+          this.response = response.data
+          this.messages.push({ role: 'evaluator', 'text': this.response.answer, 'response': this.response })
+          this.question = null
+          this.isLoading = false
+          this.scrollDiscussion()
+        }).catch(_ => {
+          this.showError('Error while comparing answer.')
+        })
       })
     },
     showError(msg) {

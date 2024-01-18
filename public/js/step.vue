@@ -44,16 +44,7 @@ export default {
     showCode() {
       let clone = JSON.parse(JSON.stringify(this.step))
       delete clone.steps
-      this.$buefy.modal.open({
-        parent: this,
-        trapFocus: true,
-        hasModalCard: true,
-        component: ObjectViewer,
-        props: {
-          title: this.title,
-          obj: clone,
-        },
-      })
+      ObjectViewer.show(this, this.title, clone)
     },
   }
 }

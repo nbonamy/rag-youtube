@@ -18,5 +18,17 @@ export default {
   data: function() {
     return { value: this.initialValue ?? '' }
   },
+  prompt: function(vue, title, callback) {
+    vue.$buefy.modal.open({
+      parent: vue,
+      trapFocus: true,
+      hasModalCard: true,
+      component: Prompt,
+      props: {
+        title: title,
+        callback: callback,
+      }
+    })
+  }
 }
 </script>

@@ -20,6 +20,17 @@
 <script>
 export default {
   props: [ 'evaluation' ],
+  show: function(vue, evaluation) {
+    vue.$buefy.modal.open({
+      parent: vue,
+      trapFocus: true,
+      hasModalCard: true,
+      component: EvaluationViewer,
+      props: {
+        evaluation: evaluation,
+      }
+    })
+  }
 }
 </script>
 

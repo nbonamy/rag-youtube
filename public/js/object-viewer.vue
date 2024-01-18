@@ -26,7 +26,20 @@ export default {
     isCode(value) {
       return Array.isArray(value) || typeof value == 'object'
     },
+  },
+  show: function(vue, title, obj) {
+    vue.$buefy.modal.open({
+      parent: vue,
+      trapFocus: true,
+      hasModalCard: true,
+      component: ObjectViewer,
+      props: {
+        title: title,
+        obj: obj,
+      },
+    })
   }
+
 }
 </script>
 

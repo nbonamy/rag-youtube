@@ -42,18 +42,21 @@ export default {
       this.showAsText('Response', this.code['response'] ?? this.code['answer'])
     },
     showAsText(title, str) {
-      this.$buefy.modal.open({
-        parent: this,
-        trapFocus: true,
-        hasModalCard: true,
-        component: CodeViewer,
-        props: {
-          title: title,
-          asText: true,
-          code: str,
-        },
-      })
+      CodeViewer.show(this, title, str, true)
     }
+  },
+  show: function(vue, title, code, asText=false) {
+    vue.$buefy.modal.open({
+      parent: vue,
+      trapFocus: true,
+      hasModalCard: true,
+      component: CodeViewer,
+      props: {
+        title: title,
+        code: code,
+        asText: asText,
+      },
+    })
   }
 }
 </script>
