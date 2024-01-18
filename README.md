@@ -94,6 +94,10 @@ For enumerated options, acceptables values are:
 - `search_type`: `similarity`, `similarity_score_threshold`, `mmr`
 - `memory_type`: `buffer`, `buffer_window`, `summary`
 
+## Prompt Engineering
+
+You have the options to use custom prompts. Those are located in the `prompts` folder. You can edit them without restarting the app.
+
 ## Debugging
 
 You can enable langchain debugging through configuration. In that case, it is recommended to redirect the output to a text file and replace the following regex `[ \t]*"context": \[[\d, \t\n]*\],\n` with nothing to clear up the trace.
