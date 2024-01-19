@@ -9,4 +9,7 @@ run:
 createdb:
 	@-rm -f rag-youtube.db > /dev/null 2>&1
 	sqlite3 rag-youtube.db < schema.sql
+	echo 'DELETE FROM runs' | sqlite3 rag-youtube.db
 
+compare:
+	./test/compare.py

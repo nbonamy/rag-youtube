@@ -1,0 +1,66 @@
+#!/usr/bin/env python3
+import requests
+
+# get tokens
+# select sum(json_extract(trace, '$.performance.input_tokens'))+ sum(json_extract(evaluation_crit_trace, '$.performance.input_tokens'))+ sum(json_extract(evaluation_qa_trace, '$.performance.input_tokens')), sum(json_extract(trace, '$.performance.output_tokens'))+ sum(json_extract(evaluation_crit_trace, '$.performance.output_tokens'))+ sum(json_extract(evaluation_qa_trace, '$.performance.output_tokens')) from runs;
+
+# get cost
+# select sum(json_extract(trace, '$.performance.cost'))+ sum(json_extract(evaluation_crit_trace, '$.performance.cost'))+ sum(json_extract(evaluation_qa_trace, '$.performance.cost')) from runs;
+
+# 19-Jan run
+# Tokens: 488297|65375
+# Cost: $6.84
+
+question = 'are pull requests a good preactice?'
+fill_memory_question = 'what are pull requests?'
+true_answer = 'Based on the provided context, it seems that the speaker, Dave Farley, has reservations about the effectiveness of pull requests in software development, especially when it comes to continuous integration. He suggests that pull requests might not be the best practice as they can impede the swift feedback loop essential for continuous integration. Farley appears to advocate for non-blocking code reviews as a more effective alternative, emphasizing the need for frequent evaluation of changes and quick feedback. Therefore, according to this perspective, pull requests might not be considered a good practice in the context of continuous integration and high-quality, efficient code development.'
+
+llm_models = ['mistral:latest', 'llama2:latest']
+qa_chain_types = ['base', 'conversation']
+doc_chain_types = ['stuff', 'map_reduce']
+search_types = ['similarity', 'similarity_score_threshold', 'mmr']
+similarity_score_thresholds = [0.0, 0.25, 0.5]
+custom_prompts = [True, False]
+
+eval_criteria = [ 'helpfullness', 'comprehensiveness', 'relevance to software engineering' ]
+eval_models = {
+  'mistral:latest': 'llama2:latest',
+  'llama2:latest': 'mistral:latest'
+}
+
+def main():
+
+  for llm_model in llm_models:
+    for qa_chain_type in qa_chain_types:
+      for doc_chain_type in doc_chain_types:
+        for search_type in search_types:
+          thresholds = similarity_score_thresholds if search_type == 'similarity_score_threshold' else [0]
+          for similarity_score_threshold in thresholds:
+            for custom_prompt in custom_prompts:
+              
+              print(f'llm_model: {llm_model}, qa_chain_type: {qa_chain_type}, doc_chain_type: {doc_chain_type}, search_type: {search_type}, similarity_score_threshold: {similarity_score_threshold}, custom_prompt: {custom_prompt}')  
+
+              # reset
+              url = f'http://localhost:5555/reset'
+              res = requests.get(url).json()
+              
+              # for conversation fill memory
+              if qa_chain_type == 'conversation':
+                url = f'http://localhost:5555/ask?question={fill_memory_question}'
+                res = requests.get(url).json()
+
+              # now ask
+              url = f'http://localhost:5555/ask?question={question}&ollama_model={llm_model}&chain_type={qa_chain_type}&doc_chain_type={doc_chain_type}&search_type={search_type}&score_threshold={similarity_score_threshold}&custom_prompts={custom_prompt}'
+              res = requests.get(url).json()
+
+              # now eval
+              id = res['chain']['id']
+              eval_model = eval_models[llm_model]
+              print(f'evaluating {id} against {eval_models[llm_model]}')
+              url=f'http://localhost:5555/evaluate/criteria?id={id}&criteria={",".join(eval_criteria)}&ollama_model={eval_model}'
+              requests.get(url).json()
+              url=f'http://localhost:5555/evaluate/qa?id={id}&reference={true_answer}&ollama_model={eval_model}'
+              requests.get(url).json()
+
+if __name__ == '__main__':
+  main()
