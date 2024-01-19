@@ -17,6 +17,8 @@ class Evaluator(AgentBase):
     # fetch answer
     if answer is None or len(answer) == 0:
       run = self.database.get_run(run_id)
+      if run is None:
+        raise Exception(f'run {run_id} not found')
       answer = run['trace']['answer']
     
     # log
@@ -72,6 +74,8 @@ class Evaluator(AgentBase):
     # fetch run
     if question is None or len(question) == 0 or answer is None or len(answer) == 0:
       run = self.database.get_run(run_id)
+      if run is None:
+        raise Exception(f'run {run_id} not found')
       question = run['trace']['question']
       answer = run['trace']['answer']
     

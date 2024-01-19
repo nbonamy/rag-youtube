@@ -62,7 +62,7 @@ class Database:
     self.con.commit()
   
   def __row_to_run(self, row):
-    return {
+    return None if row is None else {
       'id': row[0],
       'type': row[1],
       'created_at': row[2],
@@ -72,4 +72,4 @@ class Database:
       'trace': json.loads(row[6]),
       'evaluation_crit_trace': json.loads(row[7]) if row[7] else None,
       'evaluation_qa_trace': json.loads(row[8]) if row[8] else None
-    }    
+    }
