@@ -25,5 +25,5 @@ class QAChainBaseWithSources(ChainBase):
       return super()._get_prompt_kwargs(parameters)
   
     with open('prompts/sourced.txt', 'r') as f:
-      prompt = PromptTemplate(input_variables=['summaries', 'question'], template=r.read())
+      prompt = PromptTemplate(input_variables=['summaries', 'question'], template=f.read())
       return { 'prompt': prompt }
