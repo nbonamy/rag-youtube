@@ -37,7 +37,7 @@ var vm = new Vue({
     evalCritClass(run) {
       let eval_crit = this.getEvalCrit(run)
       if (eval_crit >= 4) return 'is-success'
-      else if (eval_qa <= 2) return 'is-danger'
+      else if (eval_crit <= 2) return 'is-danger'
       else return ''
     },
     evalQAClass(run) {
