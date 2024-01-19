@@ -7,6 +7,9 @@ from chain_base import ChainParameters
 from chain_qa_base import QAChainBase
 from chain_qa_sources import QAChainBaseWithSources
 from chain_qa_conversation import QAChainConversational
+from langchain.retrievers import ContextualCompressionRetriever
+from langchain.retrievers.multi_query import MultiQueryRetriever
+from langchain.retrievers.document_compressors import LLMChainExtractor
 from langchain.memory import ConversationBufferMemory, ConversationBufferWindowMemory, ConversationSummaryMemory
 
 class AgentQA(AgentBase):
@@ -29,15 +32,11 @@ class AgentQA(AgentBase):
     # parse params
     parameters = ChainParameters(self.config, overrides)
 
-    # retriever
-    search_kwargs={ 'k': parameters.document_count }
-    if parameters.search_type == 'similarity_score_threshold':
-      search_kwargs['score_threshold'] = parameters.score_threshold 
-    retriever=self.vectorstore.as_retriever(
-      search_type=parameters.search_type,
-      search_kwargs=search_kwargs
-    )
-    print(f'[agent] retriever: {retriever.search_type}, {retriever.search_kwargs}')
+    # we need an llm
+    ollama = self._build_llm(parameters)
+
+    # we need a retriever
+    retriever = self.__build_retriever(ollama, parameters)
     
     # debug with similarity_search_with_score
     docs = self.vectorstore.similarity_search_with_score(question, k=parameters.document_count)
@@ -59,7 +58,6 @@ class AgentQA(AgentBase):
     callback_handler = CallbackHandler(question, parameters)
 
     # build chain
-    ollama = self._build_llm(parameters)
     chain = self.__build_qa_chain(ollama, retriever, callback_handler, parameters)
 
     # now query
@@ -91,6 +89,37 @@ class AgentQA(AgentBase):
       self.memory = ConversationSummaryMemory(llm=llm, memory_key='chat_history', max_len=50, return_messages=True, output_key='answer')
     else:
       raise Exception(f'Unknown memory type "{memory_type}"')
+
+  def __build_retriever(self, llm, parameters: ChainParameters):
+    
+    # base retriever
+    search_kwargs={ 'k': parameters.document_count }
+    if parameters.search_type == 'similarity_score_threshold':
+      search_kwargs['score_threshold'] = parameters.score_threshold
+    base_retriever=self.vectorstore.as_retriever(
+      search_type=parameters.search_type,
+      search_kwargs=search_kwargs
+    )
+    print(f'[agent] base retriever: {base_retriever.search_type}, {base_retriever.search_kwargs}')
+
+    # final retriever
+    if parameters.retriever_type == 'base':
+      return base_retriever
+    elif parameters.retriever_type == 'multi_query':
+      print(f'[agent] building multi query retriever')
+      return MultiQueryRetriever.from_llm(
+        retriever=base_retriever,
+        llm=llm
+      )
+    elif parameters.retriever_type == 'compressor':
+      print(f'[agent] building compressor retriever')
+      compressor=LLMChainExtractor.from_llm(llm)
+      return ContextualCompressionRetriever(
+        base_retriever=base_retriever,
+        base_compressor=compressor,
+      )
+    else:
+      raise Exception(f'Unknown retriever type "{self.config.retriever_type()}"')
 
   def __build_qa_chain(self, llm, retriever, callback, parameters: ChainParameters):
     if parameters.chain_type == 'base':

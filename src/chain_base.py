@@ -10,6 +10,7 @@ class ChainParameters:
     self.chain_type = overrides['chain_type'] if 'chain_type' in overrides else config.chain_type()
     self.doc_chain_type = overrides['doc_chain_type'] if 'doc_chain_type' in overrides else config.doc_chain_type()
     self.search_type = overrides['search_type'] if 'search_type' in overrides else config.search_type()
+    self.retriever_type = overrides['retriever_type'] if 'retriever_type' in overrides else config.retriever_type()
     self.score_threshold = float(overrides['score_threshold']) if 'score_threshold' in overrides else config.score_threshold()
     self.document_count = int(overrides['document_count']) if 'document_count' in overrides else config.document_count()
     self.custom_prompts = utils.is_true(overrides['custom_prompts']) if 'custom_prompts' in overrides else config.custom_prompts()
@@ -22,6 +23,7 @@ class ChainParameters:
       'chain_type': self.chain_type,
       'doc_chain_type': self.doc_chain_type,
       'search_type': self.search_type,
+      'retriever_type': self.retriever_type,
       'score_threshold': self.score_threshold,
       'document_count': self.document_count,
       'custom_prompts': self.custom_prompts,
@@ -85,6 +87,12 @@ class ChainBase:
       # generator
       try:
         prompts['generator'] = self.chain.question_generator.prompt.template
+      except:
+        pass
+
+      # retriever
+      try:
+        prompts['retriever'] = self.chain.retriever.llm_chain.prompt.template
       except:
         pass
 

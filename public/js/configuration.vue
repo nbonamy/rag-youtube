@@ -30,6 +30,13 @@
             <option value="map_rerank">MapRerank</option>
           </b-select>
         </b-field>
+        <b-field label="Retriever Type" horizontal>
+          <b-select v-model="configuration.retriever_type" :expanded="true">
+            <option value="base">Standard</option>
+            <option value="multi_query">Multi-Query</option>
+            <option value="compressor">Contextual Compression</option>
+          </b-select>
+        </b-field>
         <b-field label="Search Type" horizontal>
           <b-select v-model="configuration.search_type" :expanded="true">
             <option value="similarity">Similarity</option>

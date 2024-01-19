@@ -52,6 +52,9 @@ class Config:
 
   def doc_chain_type(self):
     return self.__get_value(CONFIG_SECTION_SEARCH, 'doc_chain_type') or consts.DEFAULT_DOC_CHAIN_TYPE
+
+  def retriever_type(self):
+    return self.__get_value(CONFIG_SECTION_SEARCH, 'retriever_type') or consts.DEFAULT_RETRIEVER_TYPE
   
   def search_type(self):
     return self.__get_value(CONFIG_SECTION_SEARCH, 'search_type') or consts.DEFAULT_SEARCH_TYPE
