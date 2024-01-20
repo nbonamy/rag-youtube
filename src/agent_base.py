@@ -53,10 +53,16 @@ class AgentBase:
     print(f'[agent] building embeddings for {model}')
     if model == 'ollama':
       self.encoder = None
-      self.embeddings = OllamaEmbeddings(base_url=config.ollama_url(), model=config.ollama_model())
+      self.embeddings = OllamaEmbeddings(
+        base_url=config.ollama_url(),
+        model=config.ollama_model()
+      )
     elif model.startswith('openai:'):
       self.encoder = None
-      self.embeddings = OpenAIEmbeddings(model=model.split(':')[1])
+      self.embeddings = OpenAIEmbeddings(
+        openai_api_key=self.config.openai_api_key(),
+        model=model.split(':')[1]
+      )
     else:
       self.encoder = SentenceTransformer(model)
       self.embeddings = HuggingFaceEmbeddings(model_name=model)
@@ -66,7 +72,10 @@ class AgentBase:
       return
     if self.embeddings is None:
       self._build_embedder()
-    self.vectorstore=Chroma(persist_directory=self.config.db_persist_directory(), embedding_function=self.embeddings)
+    self.vectorstore=Chroma(
+      persist_directory=self.config.db_persist_directory(),
+      embedding_function=self.embeddings
+    )
 
   def _build_llm(self, parameters: ChainParameters) -> BaseLanguageModel:
     if parameters.llm == 'openai':

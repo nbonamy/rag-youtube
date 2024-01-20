@@ -103,7 +103,7 @@ Then access [http://localhost:5555](http://localhost:5555).
 
 You can change some defaults by creating a `rag-youtube.conf` file in the base folder. A good way to start is to copy `rag-youtube.sample.conf`: it contains all optios commented out with default values specified. Feel free to play with them!
 
-For the embeddings model, default is to use a [HuggingFace Sentence Transformers models](https://www.sbert.net/docs/pretrained_models.html). You can specify `ollama` to use Ollama embeddings or `openai:xxxx` to use a [OpenAI Embeddings](https://platform.openai.com/docs/guides/embeddings/what-are-embeddings).
+For the embeddings model, default is to use a [HuggingFace Sentence Transformers models](https://www.sbert.net/docs/pretrained_models.html). You can specify `ollama` to use Ollama embeddings or `openai:xxxx` to use a [OpenAI Embeddings](https://platform.openai.com/docs/guides/embeddings/what-are-embeddings). Don't forget to setup your OpenAI API key in the Configuration file for this.
 
 For enumerated options, acceptables values are:
 - `llm`: `ollama`, `openai`
