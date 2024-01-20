@@ -49,8 +49,7 @@ If you want to use OpenAI by default, please refer to the Configuration section 
 In any case, to use OpenAI, you need to specify:
 - `openai_org_id`: your OpenAI Organization ID
 - `openai_api_key`: your OpenAI API key
-- `openai_model`: the OpenAI model you want to use (defaults to `gpt-3.5-turbo-1106`).
-
+- `openai_model`: the [OpenAI model](https://platform.openai.com/docs/models) you want to use (defaults to `gpt-3.5-turbo-1106`).
 
 ## Preparation
 
