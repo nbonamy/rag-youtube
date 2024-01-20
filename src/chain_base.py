@@ -5,7 +5,9 @@ from langchain_core.runnables import RunnableConfig
 
 class ChainParameters:
   def __init__(self, config, overrides):
+    self.llm = overrides['llm'] if 'llm' in overrides else config.llm()
     self.ollama_model = overrides['ollama_model'] if 'ollama_model' in overrides else config.ollama_model()
+    self.openai_model = overrides['openai_model'] if 'openai_model' in overrides else config.openai_model()
     self.llm_temperature = float(overrides['llm_temperature']) if 'llm_temperature' in overrides else config.llm_temperature()
     self.chain_type = overrides['chain_type'] if 'chain_type' in overrides else config.chain_type()
     self.doc_chain_type = overrides['doc_chain_type'] if 'doc_chain_type' in overrides else config.doc_chain_type()
@@ -16,9 +18,13 @@ class ChainParameters:
     self.custom_prompts = utils.is_true(overrides['custom_prompts']) if 'custom_prompts' in overrides else config.custom_prompts()
     self.return_sources = utils.is_true(overrides['return_sources']) if 'return_sources' in overrides else config.return_sources()
 
+  def llm_model(self):
+    return self.openai_model if self.llm == 'openai' else self.ollama_model
+  
   def to_dict(self):
     return {
-      'ollama_model': self.ollama_model,
+      'llm': self.llm,
+      'llm_model': self.llm_model(),
       'llm_temperature': self.llm_temperature,
       'chain_type': self.chain_type,
       'doc_chain_type': self.doc_chain_type,

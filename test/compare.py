@@ -50,16 +50,16 @@ def main():
                 res = requests.get(url).json()
 
               # now ask
-              url = f'http://localhost:5555/ask?question={question}&ollama_model={llm_model}&chain_type={qa_chain_type}&doc_chain_type={doc_chain_type}&search_type={search_type}&score_threshold={similarity_score_threshold}&custom_prompts={custom_prompt}'
+              url = f'http://localhost:5555/ask?question={question}&llm=ollama&ollama_model={llm_model}&chain_type={qa_chain_type}&doc_chain_type={doc_chain_type}&search_type={search_type}&score_threshold={similarity_score_threshold}&custom_prompts={custom_prompt}'
               res = requests.get(url).json()
 
               # now eval
               id = res['chain']['id']
               eval_model = eval_models[llm_model]
               print(f'evaluating {id} against {eval_models[llm_model]}')
-              url=f'http://localhost:5555/evaluate/criteria?id={id}&criteria={",".join(eval_criteria)}&ollama_model={eval_model}'
+              url=f'http://localhost:5555/evaluate/criteria?id={id}&criteria={",".join(eval_criteria)}&llm=ollama&ollama_model={eval_model}'
               requests.get(url).json()
-              url=f'http://localhost:5555/evaluate/qa?id={id}&reference={true_answer}&ollama_model={eval_model}'
+              url=f'http://localhost:5555/evaluate/qa?id={id}&reference={true_answer}&llm=ollama&ollama_model={eval_model}'
               requests.get(url).json()
 
 if __name__ == '__main__':

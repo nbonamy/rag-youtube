@@ -3,7 +3,9 @@ chromadb
 tiktoken
 langchain
 langchain-community
+langchain-openai
 sentence_transformers
 google-api-python-client
 requests
+openai
 yt_dlp

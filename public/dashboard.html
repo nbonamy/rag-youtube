@@ -40,6 +40,7 @@
 							<th>View</th>
 							<th>Execution</th>
 							<th>Type</th>
+							<th>LLM</th>
 							<th>Model</th>
 							<th>Total time</th>
 							<th>Tokens</th>
@@ -58,7 +59,8 @@
 							</td>
 							<td>{{ run.date }}</td>
 							<td>{{ run.type }}</td>
-							<td>{{ run.trace.parameters.ollama_model }}</td>
+							<td>{{ run.trace.parameters.llm }}</td>
+							<td>{{ run.trace.parameters.llm_model }}</td>
 							<td :class="timeClass(run.total_time)">{{ run.total_time }} ms</td>
 							<td>{{ run.input_tokens }} + {{ run.output_tokens }} = {{ run.total_tokens }}</td>
 							<td>

@@ -5,8 +5,10 @@ CONFIG_PATH = './rag-youtube.conf'
 # defaults
 DEFAULT_DEBUG = 'false'
 DEFAULT_DATABASE_PATH = 'rag-youtube.db'
+DEFAULT_LLM = 'ollama'
 DEFAULT_OLLAMA_URL = 'http://localhost:11434'
 DEFAULT_OLLAMA_MODEL = 'mistral:latest'
+DEFAULT_OPENAI_MODEL = 'gpt-3.5-turbo-1106'
 DEFAULT_LLM_TEMPERATURE = 0.8
 DEFAULT_DB_PERSIST_DIR = 'db'
 DEFAULT_EMBEDDINGS_MODEL = 'all-mpnet-base-v2'

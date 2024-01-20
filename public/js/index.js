@@ -5,7 +5,10 @@ var vm = new Vue({
   data: () => {
     return {
       configuration: {},
-      models: [],
+      models: {
+        'ollama': [],
+        'openai': [],
+      },
       channel: null,
       question: null,
       messages: [],
@@ -159,10 +162,10 @@ var vm = new Vue({
     }).catch(_ => {
       this.showError('Error while getting configuration.')
     })
-    axios.get('/models').then(response => {
-      this.models = response.data.models
+    axios.get('/models/ollama').then(response => {
+      this.models.ollama = response.data.models
     }).catch(_ => {
-      this.showError('Error while getting models information.')
+      this.showError('Error while getting ollama models information.')
     })
     axios.get('/info').then(response => {
       this.channel = response.data

@@ -3,14 +3,23 @@
     <div class="modal-card" style="width: 600px; margin: 0 auto;">
       <header class="modal-card-head"><p class="modal-card-title">Configuration</p></header>
       <section class="modal-card-body">
-        <b-field label="Ollama Model" horizontal>
+        <b-field label="LLM" horizontal>
+          <b-select v-model="configuration.llm" :expanded="true">
+            <option value="ollama">Ollama</option>
+            <option value="openai">OpenAI</option>
+          </b-select>
+        </b-field>
+        <b-field label="Ollama Model" horizontal v-if="configuration.llm == 'ollama'">
           <b-select v-model="configuration.ollama_model" :expanded="true">
-            <option v-for="model in models"
+            <option v-for="model in models.ollama"
               :value="model.name"
               :key="model.name">
               {{ model.name }}
             </option>
           </b-select>
+        </b-field>
+        <b-field label="OpenAI Model" horizontal v-if="configuration.llm == 'openai'">
+          <b-input v-model="configuration.openai_model"></b-input>
         </b-field>
         <b-field label="LLM Temperature" horizontal>
           <b-input type="number" min="0" max="1" step="0.05" v-model="configuration.llm_temperature"></b-input>
@@ -68,6 +77,7 @@
 export default {
   props: [ 'configuration', 'models' ],
   show: function(vue, models, configuration) {
+    console.log(models)
     vue.$buefy.modal.open({
       parent: vue,
       trapFocus: true,

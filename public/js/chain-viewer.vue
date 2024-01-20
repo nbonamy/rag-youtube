@@ -18,7 +18,8 @@ export default {
   computed: {
     title() {
       return [
-        this.chain.parameters.ollama_model,
+        this.chain.parameters.llm,
+        this.chain.parameters.llm_model,
         this.chain.parameters.chain_type,
         this.chain.parameters.doc_chain_type,
         this.chain.parameters.search_type,

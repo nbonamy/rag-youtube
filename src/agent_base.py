@@ -4,10 +4,12 @@ import requests
 import langchain
 from database import Database
 from chain_base import ChainParameters
-from langchain_community.llms import Ollama
+from langchain_community.vectorstores import Chroma
+from langchain_core.language_models import BaseLanguageModel
 from langchain_community.embeddings import OpenAIEmbeddings, OllamaEmbeddings, HuggingFaceEmbeddings
 from sentence_transformers import SentenceTransformer, util
-from langchain_community.vectorstores import Chroma
+from langchain_community.llms import Ollama
+from langchain_openai import ChatOpenAI
 
 class AgentBase:
 
@@ -20,8 +22,14 @@ class AgentBase:
     self.vectorstore = None
   
   def list_ollama_models(self) -> dict:
-    url = f'{self.config.ollama_url()}/api/tags'
-    return requests.get(url).json()
+    base_url=self.config.ollama_url()
+    if base_url == 'disabled':
+      return { 'models': [] }
+    return requests.get(f'{base_url}/api/tags').json()
+
+  def list_openai_models(self) -> dict:
+    #TODO
+    return { 'models': [] }
 
   def calculate_embeddings(self, text) -> dict:
     return self.encoder.encode(text)
@@ -60,10 +68,22 @@ class AgentBase:
       self._build_embedder()
     self.vectorstore=Chroma(persist_directory=self.config.db_persist_directory(), embedding_function=self.embeddings)
 
-  def _build_llm(self, parameters: ChainParameters) -> Ollama:
-    print(f'[agent] building LLM with model={parameters.ollama_model}, temperature={parameters.llm_temperature}')
-    return Ollama(
-      base_url=self.config.ollama_url(),
-      model=parameters.ollama_model,
-      temperature=parameters.llm_temperature,
-    )
+  def _build_llm(self, parameters: ChainParameters) -> BaseLanguageModel:
+    if parameters.llm == 'openai':
+      print(f'[agent] building OpenAI LLM with temperature={parameters.llm_temperature}')
+      return ChatOpenAI(
+        openai_api_key=self.config.openai_api_key(),
+        openai_organization=self.config.openai_org_id(),
+        model=parameters.openai_model,
+        temperature=parameters.llm_temperature,
+        streaming=True,
+      )
+    elif parameters.llm == 'ollama':
+      print(f'[agent] building Ollama LLM with model={parameters.ollama_model}, temperature={parameters.llm_temperature}')
+      return Ollama(
+        base_url=self.config.ollama_url(),
+        model=parameters.ollama_model,
+        temperature=parameters.llm_temperature,
+      )
+    else:
+      raise Exception(f'Unknown llm={self.config.llm()}')

@@ -21,18 +21,36 @@ YouTube Data API: You need a Google Cloud account and a project set up in the Go
 
 Get the video ID of any of the videos of the channel you want to analyze. You can extract this directly from the URL. For instance in `https://www.youtube.com/watch?v=AS2m2rRn9Cw&t=211s` the video ID is `AS2m2rRn9Cw`.
 
-You also need [Ollama](https://ollama.ai) installed with one model installed. Mistral or LLama2 are preferred:
+The following LLMs are supported:
+- [Ollama](https://ollama.ai) (default)
+- [OpenAI](https://openai.com)
+
+## Setup
+
+### Dependencies
+
+```
+pip install -r requirements.txt
+```
+
+### Ollama
+
+You need to install Ollama and download at least one model. Mistral or LLama2 are preferred:
 
 ```
 ollama pull mistral:latest
 ollama pull llama2:latest
 ```
 
-## Setup
+### OpenAI
 
-```
-pip install -r requirements.txt
-```
+If you want to use OpenAI by default, please refer to the Configuration section below and set `llm=openai` in the General section of your configuration file. If you also want to disable Ollama set `ollama_url=disabled`.
+
+In any case, to use OpenAI, you need to specify:
+- `openai_org_id`: your OpenAI Organization ID
+- `openai_api_key`: your OpenAI API key
+- `openai_model`: the OpenAI model you want to use (defaults to `gpt-3.5-turbo-1106`).
+
 
 ## Preparation
 
@@ -89,6 +107,7 @@ You can change some defaults by creating a `rag-youtube.conf` file in the base f
 For the embeddings model, default is to use a [HuggingFace Sentence Transformers models](https://www.sbert.net/docs/pretrained_models.html). You can specify `ollama` to use Ollama embeddings or `openai:xxxx` to use a [OpenAI Embeddings](https://platform.openai.com/docs/guides/embeddings/what-are-embeddings).
 
 For enumerated options, acceptables values are:
+- `llm`: `ollama`, `openai`
 - `chain_type`: `base`, `sources`, `conversation`
 - `doc_chain_type`: `stuff`, `map_reduce`, `refine`, `map_rerank`
 - `retriever_type`: `base`, `multi_query`, `compressor`

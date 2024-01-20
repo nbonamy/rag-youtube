@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import os
+import json
 import html
 import utils
 from agent_base import AgentBase
@@ -26,6 +28,9 @@ class AgentQA(AgentBase):
 
   def query(self, question: str, overrides: dict) -> dict:
 
+    # check embeddings consistency
+    self.__check_embeddings()
+
     # log
     print(f'[agent] processing {question}')
 
@@ -33,10 +38,10 @@ class AgentQA(AgentBase):
     parameters = ChainParameters(self.config, overrides)
 
     # we need an llm
-    ollama = self._build_llm(parameters)
+    llm = self._build_llm(parameters)
 
     # we need a retriever
-    retriever = self.__build_retriever(ollama, parameters)
+    retriever = self.__build_retriever(llm, parameters)
     
     # debug with similarity_search_with_score
     docs = self.vectorstore.similarity_search_with_score(question, k=parameters.document_count)
@@ -58,7 +63,7 @@ class AgentQA(AgentBase):
     callback_handler = CallbackHandler(question, parameters)
 
     # build chain
-    chain = self.__build_qa_chain(ollama, retriever, callback_handler, parameters)
+    chain = self.__build_qa_chain(llm, retriever, callback_handler, parameters)
 
     # now query
     print(f'[agent] retrieving and prompting using {"custom" if parameters.custom_prompts else "default"} prompts')
@@ -176,3 +181,12 @@ class AgentQA(AgentBase):
             break
 
     return list(sources.values())
+
+  def __check_embeddings(self):
+    if os.path.exists('db_config.json'):
+      with open('db_config.json', 'r') as f:
+        db_config = json.load(f)
+        db_embeddings = db_config['embeddings_model']
+        cfg_embeddings = self.config.embeddings_model()
+        if db_embeddings != cfg_embeddings:
+          raise Exception(f'Embeddings model mismatch: {db_embeddings} != {cfg_embeddings}')

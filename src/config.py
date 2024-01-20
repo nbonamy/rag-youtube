@@ -24,12 +24,24 @@ class Config:
   def database_path(self):
     return self.__get_value(CONFIG_SECTION_GENERAL, 'database_path') or consts.DEFAULT_DATABASE_PATH
 
+  def llm(self):
+    return self.__get_value(CONFIG_SECTION_GENERAL, 'llm') or consts.DEFAULT_LLM
+
   def ollama_url(self):
     return self.__get_value(CONFIG_SECTION_GENERAL, 'ollama_url') or consts.DEFAULT_OLLAMA_URL
   
   # https://ollama.ai/library
   def ollama_model(self):
     return self.__get_value(CONFIG_SECTION_GENERAL, 'ollama_model') or consts.DEFAULT_OLLAMA_MODEL
+
+  def openai_org_id(self):
+    return self.__get_value(CONFIG_SECTION_GENERAL, 'openai_org_id') or None
+
+  def openai_api_key(self):
+    return self.__get_value(CONFIG_SECTION_GENERAL, 'openai_api_key') or None
+
+  def openai_model(self):
+    return self.__get_value(CONFIG_SECTION_GENERAL, 'openai_model') or consts.DEFAULT_OPENAI_MODEL
   
   def llm_temperature(self):
     return float(self.__get_value(CONFIG_SECTION_GENERAL, 'llm_temperature') or consts.DEFAULT_LLM_TEMPERATURE)
@@ -76,6 +88,22 @@ class Config:
     value = self.__get_value(CONFIG_SECTION_SEARCH, 'return_sources') or consts.DEFAULT_RETURN_SOURCES
     return utils.is_true(value)
 
+  def to_dict(self):
+    return {
+      'llm': self.llm(),
+      'ollama_model': self.ollama_model(),
+      'openai_model': self.openai_model(),
+      'llm_temperature': self.llm_temperature(),
+      'chain_type': self.chain_type(),
+      'doc_chain_type': self.doc_chain_type(),
+      'search_type': self.search_type(),
+      'retriever_type': self.retriever_type(),
+      'score_threshold': self.score_threshold(),
+      'document_count': self.document_count(),
+      'custom_prompts': self.custom_prompts(),
+      'return_sources': self.return_sources(),
+    }
+    
   def __get_value(self, section, option):
     if self.config.has_option(section, option):
       return self.config.get(section, option).strip("'")

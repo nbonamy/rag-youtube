@@ -26,16 +26,15 @@ database = Database(app.config.get('config'))
 @app.route('/config')
 def config():
   config = app.config.get('config')
-  parameters = ChainParameters(config, {})
-  return {
-    'configuration': parameters.to_dict() | {
-      'ollama_model': config.ollama_model()
-    }
-  }
+  return { 'configuration': config.to_dict() }
 
-@app.route('/models')
-def models():
+@app.route('/models/ollama')
+def ollama_models():
   return agent.list_ollama_models()
+
+@app.route('/models/openai')
+def openai_models():
+  return agent.list_openai_models()
 
 @app.route('/info')
 def info():

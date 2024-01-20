@@ -31,11 +31,10 @@ class Evaluator(AgentBase):
     callback_handler = CallbackHandler(answer, parameters)
 
     # build chain
-    ollama = self._build_llm(parameters)
-    chain = CriteriaEvalChain(ollama, criteria, callback_handler, parameters)
+    llm = self._build_llm(parameters)
+    chain = CriteriaEvalChain(llm, criteria, callback_handler, parameters)
 
     # now query
-    print(f'[eval] evaluating using {ollama.model}')
     chain.invoke(answer)
 
     # done
@@ -89,11 +88,10 @@ class Evaluator(AgentBase):
     callback_handler = CallbackHandler(answer, parameters)
 
     # build chain
-    ollama = self._build_llm(parameters)
-    chain = QAEvalChain(ollama, callback_handler)
+    llm = self._build_llm(parameters)
+    chain = QAEvalChain(llm, callback_handler)
 
     # now query
-    print(f'[eval] evaluating using {ollama.model}')
     chain.invoke(question, answer, reference)
 
     # done

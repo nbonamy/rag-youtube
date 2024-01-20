@@ -1,5 +1,6 @@
 
 import re
+import json
 import utils
 import tiktoken
 from uuid import UUID
@@ -47,20 +48,43 @@ class ChainStep:
     self.args[x] = value
 
   def __get_repr(self, serialized: dict) -> str:
+    # look for a repr
     repr = self.__find_attr(serialized, 'repr')
-    return None if repr is None else re.sub(r'PromptTemplate\(.*?[^\\]\'\)', 'PromptTemplate(…)', repr)
+    if repr is not None:
+      return re.sub(r'PromptTemplate\(.*?[^\\]\'\)', 'PromptTemplate(…)', repr)
+
+    # check if it is a LLM chain
+    try:
+      if serialized['id'][-1] == 'LLMChain':
+        llm=serialized['kwargs']['llm']['id'][-1]
+        model=serialized['kwargs']['llm']['kwargs']['model']
+        temperature=serialized['kwargs']['llm']['kwargs']['temperature']
+        return f'{llm}(model=\'{model}\', temperature={temperature})'
+      elif len(serialized['id']) > 1 and serialized['id'][1] in ['llms', 'chat_models']:
+        llm=serialized['id'][-1]
+        model=serialized['kwargs']['model']
+        temperature=serialized['kwargs']['temperature']
+        return f'{llm}(model=\'{model}\', temperature={temperature})'
+    except:
+      pass
+
+    # not found
+    return None
 
   def __find_attr(self, serialized: dict, key: str) -> str:
-    if key in serialized:
-      return serialized[key]
-    if 'kwargs' in serialized:
-      for kwarg in serialized['kwargs']:
-        if kwarg == key:
-          return serialized['kwargs'][key]
-        value = self.__find_attr(serialized['kwargs'][kwarg], key)
-        if value is not None:
-          return value
-    return None
+    try:
+      if key in serialized:
+        return serialized[key]
+      if 'kwargs' in serialized:
+        for kwarg in serialized['kwargs']:
+          if kwarg == key:
+            return serialized['kwargs'][key]
+          value = self.__find_attr(serialized['kwargs'][kwarg], key)
+          if value is not None:
+            return value
+      return None
+    except:
+      return None
 
 class CallbackHandler(BaseCallbackHandler):
   def __init__(self, question, parameters):
@@ -125,6 +149,13 @@ class CallbackHandler(BaseCallbackHandler):
       print(f'[chain] on_llm_end called for unknown run id {run_id}')
       return
     run.end()
+    if run['response'] is None:
+      try:
+        responses = response.flatten()
+        run['response'] = responses[0].generations[0][0].text
+        run['output_tokens'] = responses[0].llm_output['token_usage']['completion_tokens']
+      except:
+        pass
     run['time_1st_token'] = self.__time_1st_token(run)
     run['tokens_per_sec'] = self.__tokens_per_sec(run)
   
@@ -144,6 +175,22 @@ class CallbackHandler(BaseCallbackHandler):
     print(f'[chain] retrieved {len(documents)} relevant documents')
     run.end()
     run['documents'] = [doc.metadata for doc in documents]
+
+  def on_tool_start(self, serialized: dict, input: str, run_id: UUID, parent_run_id: UUID, **kwargs) -> None:
+    print(f'[chain] tool starting ("{input_str[0:64]}...")')
+    parent = self.__get_step(parent_run_id)
+    parent.add_step(ChainStep(
+      run_id, 'tool', serialized,
+      input=input, output=None
+    ))
+
+  def on_tool_end(self, output: str, run_id: UUID, **kwargs) -> None:
+    run = self.__get_step(run_id)
+    if run is None:
+      print(f'[chain] on_tool_end called for unknown run id {run_id}')
+      return
+    run.end()
+    run['output'] = output
 
   def to_dict(self) -> dict:
     res={
@@ -188,7 +235,7 @@ class CallbackHandler(BaseCallbackHandler):
 
   def __get_avg_across_llm_runs(self, key: str) -> any:
     values = self.__get_not_none_across_llm_runs(key)
-    return round(sum(value for value in values) / len(values), 2)
+    return None if len(values) == 0 else round(sum(value for value in values) / len(values), 2)
 
   def __get_not_none_across_llm_runs(self, key: str) -> list:
     return [run[key] for run in self.__get_llm_runs() if run[key] is not None]
