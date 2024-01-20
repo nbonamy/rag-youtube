@@ -58,7 +58,7 @@ We will execute the following steps:
 
 - Get the list of all videos of the channel
 - Download subtitles/captions for each video
-- Load the subtitles/captions in our embedding database
+- Load the subtitles/captions in our vector database
 
 Once this is done, you can run the web interface and ask questions to the channel host!
 
