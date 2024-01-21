@@ -163,7 +163,7 @@ cython_debug/
 .DS_Store
 
 # our stuff
-captions/
+captions*/
 db/
 *.json
 *.conf

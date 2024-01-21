@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os
+import sys
 import json
 import html
 from downloader import Downloader
@@ -10,6 +11,9 @@ def main():
   downloader = Downloader()
   if not os.path.exists('captions'):
     os.mkdir('captions')
+
+  # lang
+  lang = None if len(sys.argv) == 1 else sys.argv[1]
 
   videos = json.load(open('videos.json'))
   for video in videos:
@@ -26,7 +30,7 @@ def main():
       original = open(f'captions/{id}.original.vtt', 'r').read()
     else:
       print(f'[youtube] downloading captions for {id}: {title}...')
-      original = downloader.download_captions(id)
+      original = downloader.download_captions(id, lang)
       with open(f'captions/{id}.original.vtt', 'w') as f:
         f.write(original)
 

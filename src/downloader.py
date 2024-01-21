@@ -59,7 +59,7 @@ class Downloader:
     # remove header lines
     contents = re.sub(r'WEBVTT\n', '', contents)
     contents = re.sub(r'Kind: captions\n', '', contents)
-    contents = re.sub(r'Language: en\n', '', contents)
+    contents = re.sub(r'Language: .*?\n', '', contents)
 
     # remove timestamp lines
     contents = re.sub(r'\d\d:\d\d:\d\d\.\d\d\d --> .*\n', '', contents)
