@@ -31,6 +31,8 @@ def main():
     else:
       print(f'[youtube] downloading captions for {id}: {title}...')
       original = downloader.download_captions(id, lang)
+      if original is None:
+        continue
       with open(f'captions/{id}.original.vtt', 'w') as f:
         f.write(original)
 

@@ -15,9 +15,11 @@ class Downloader:
 
   def download_captions(self, url, lang=None):
     captions_filename = self._download_captions(url, lang)
-    original_captions = open(captions_filename, 'r').read()
-    os.remove(captions_filename)
-    return original_captions
+    if os.path.exists(captions_filename):
+      original_captions = open(captions_filename, 'r').read()
+      os.remove(captions_filename)
+      return original_captions
+    return None
 
   def prepare_captions(self, info, original_captions):
     captions = self._cleanup_captions(original_captions)
