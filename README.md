@@ -13,6 +13,8 @@ This has evolved in being a playground to explore RAG applications. Notably:
 <img src="doc/configuration.png" height="300"/>
 &nbsp;&nbsp;&nbsp;&nbsp;
 <img src="doc/chain.png" height="300"/>
+&nbsp;&nbsp;&nbsp;&nbsp;
+<img src="doc/dashboard.png" width="500"/>
 </span>
 
 ## Prerequisites
@@ -120,6 +122,10 @@ You have the options to use custom prompts. Those are located in the `prompts` f
 ## Debugging
 
 You can enable langchain debugging through configuration. In that case, it is recommended to redirect the output to a text file and replace the following regex `[ \t]*"context": \[[\d, \t\n]*\],\n` with nothing to clear up the trace.
+
+## Benchmarking
+
+If you want to benchmark several LLM in combination with chain types and other parameters, you can tweak the `test/compare.py` script. This will allow you to batch execute multiple combinations and then use the monitoring dashboard (see below) to compare results. Be cautions of costs if your benchmark includes OpenAI!
 
 ## Monitoring
 
