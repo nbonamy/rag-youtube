@@ -11,7 +11,7 @@ import requests
 # Tokens: 488297|65375
 # Cost: $6.84
 
-question = 'are pull requests a good preactice?'
+question = 'are pull requests a good practice?'
 fill_memory_question = 'what are pull requests?'
 true_answer = 'Based on the provided context, it seems that the speaker, Dave Farley, has reservations about the effectiveness of pull requests in software development, especially when it comes to continuous integration. He suggests that pull requests might not be the best practice as they can impede the swift feedback loop essential for continuous integration. Farley appears to advocate for non-blocking code reviews as a more effective alternative, emphasizing the need for frequent evaluation of changes and quick feedback. Therefore, according to this perspective, pull requests might not be considered a good practice in the context of continuous integration and high-quality, efficient code development.'
 
