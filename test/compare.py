@@ -48,13 +48,11 @@ def main():
                 print(f'llm: {llm}, model: {model}, qa_chain_type: {qa_chain_type}, doc_chain_type: {doc_chain_type}, search_type: {search_type}, similarity_score_threshold: {similarity_score_threshold}, custom_prompt: {custom_prompt}')  
 
                 # reset
-                url = f'http://localhost:5555/reset'
-                res = requests.get(url).json()
                 
-                # for conversation fill memory
+                # for conversation reset and fill memory
                 if qa_chain_type == 'conversation':
-                  url = f'http://localhost:5555/ask?question={fill_memory_question}'
-                  res = requests.get(url).json()
+                  res = requests.get(f'http://localhost:5555/reset').json()
+                  res = requests.get(f'http://localhost:5555/ask?question={fill_memory_question}').json()
 
                 # now ask
                 url = f'http://localhost:5555/ask?question={question}&llm={llm}&openai_model={model}&ollama_model={model}&chain_type={qa_chain_type}&doc_chain_type={doc_chain_type}&search_type={search_type}&score_threshold={similarity_score_threshold}&custom_prompts={custom_prompt}'
