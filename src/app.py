@@ -11,6 +11,10 @@ from config import Config
 from bottle import Bottle, request, static_file
 from chain_base import ChainParameters
 
+# to avoid tokenizers parallelism issues
+# huggingface/tokenizers: The current process just got forked...
+os.environ['TOKENIZERS_PARALLELISM'] = 'false'
+
 # we need this as a global so we can use it in the ask endpoint
 summarizer = None
 
