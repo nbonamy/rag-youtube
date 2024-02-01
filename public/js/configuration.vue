@@ -77,7 +77,6 @@
 export default {
   props: [ 'configuration', 'models' ],
   show: function(vue, models, configuration) {
-    console.log(models)
     vue.$buefy.modal.open({
       parent: vue,
       trapFocus: true,
