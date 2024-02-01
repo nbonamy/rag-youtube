@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import os
 import json
 import utils
 import consts
@@ -19,9 +20,19 @@ app.config.update({
   'config': Config(consts.CONFIG_PATH)
 })
 
-agent = AgentQA(app.config.get('config'))
-evaluator = Evaluator(app.config.get('config'))
-database = Database(app.config.get('config'))
+# langsmith
+config = app.config.get('config')
+if config.langchain_api_key():
+  os.environ['LANGCHAIN_TRACING_V2'] = 'true'
+  os.environ['LANGCHAIN_ENDPOINT'] = 'https://api.smith.langchain.com'
+  os.environ['LANGCHAIN_API_KEY'] = config.langchain_api_key()
+  if config.langchain_project():
+    os.environ['LANGCHAIN_PROJECT'] = config.langchain_project()
+
+# create stuff
+agent = AgentQA(config)
+evaluator = Evaluator(config)
+database = Database(config)
 
 @app.route('/config')
 def config():

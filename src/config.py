@@ -24,6 +24,12 @@ class Config:
   def database_path(self):
     return self.__get_value(CONFIG_SECTION_GENERAL, 'database_path') or consts.DEFAULT_DATABASE_PATH
 
+  def langchain_api_key(self):
+    return self.__get_value(CONFIG_SECTION_GENERAL, 'langchain_api_key') or None
+
+  def langchain_project(self):
+    return self.__get_value(CONFIG_SECTION_GENERAL, 'langchain_project') or None
+
   def llm(self):
     return self.__get_value(CONFIG_SECTION_GENERAL, 'llm') or consts.DEFAULT_LLM
 

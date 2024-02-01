@@ -53,6 +53,12 @@ In any case, to use OpenAI, you need to specify:
 - `openai_api_key`: your OpenAI API key
 - `openai_model`: the [OpenAI model](https://platform.openai.com/docs/models) you want to use (defaults to `gpt-3.5-turbo-1106`).
 
+### LangSmith
+
+You can enable LangSmith integration through configuration (see section below). You need to specify:
+- `langchain_api_key`: your LangChain/LangSmith API key
+- `langchain_project`: the LangSmith project (optional, defaults to `default`)
+
 ## Preparation
 
 We will execute the following steps:
