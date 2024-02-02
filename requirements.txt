@@ -4,6 +4,7 @@ tiktoken
 langchain
 langchain-community
 langchain-openai
+langchain-nomic
 sentence_transformers
 google-api-python-client
 requests

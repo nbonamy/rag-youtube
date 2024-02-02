@@ -8,6 +8,7 @@ from langchain_community.vectorstores import Chroma
 from langchain_core.language_models import BaseLanguageModel
 from langchain_community.embeddings import OpenAIEmbeddings, OllamaEmbeddings, HuggingFaceEmbeddings
 from sentence_transformers import SentenceTransformer, util
+from langchain_nomic.embeddings import NomicEmbeddings
 from langchain_community.llms import Ollama
 from langchain_openai import ChatOpenAI
 
@@ -62,6 +63,11 @@ class AgentBase:
       self.embeddings = OpenAIEmbeddings(
         openai_api_key=self.config.openai_api_key(),
         model=model.split(':')[1]
+      )
+    elif model.startswith('nomic:'):
+      self.encoder = None
+      self.embeddings = NomicEmbeddings(
+        model=model.split(':')[1] or 'nomic-embed-text-v1'
       )
     else:
       self.encoder = SentenceTransformer(model)

@@ -27,6 +27,12 @@ The following LLMs are supported:
 - [Ollama](https://ollama.ai) (default)
 - [OpenAI](https://openai.com)
 
+The following embeddings models are supported:
+- [HuggingFace Sentence Transformers models](https://www.sbert.net/docs/pretrained_models.html) (default)
+- OpenAI
+- [Nomic](https://www.nomic.ai)
+- Ollama
+
 ## Setup
 
 ### Dependencies
@@ -111,7 +117,13 @@ Then access [http://localhost:5555](http://localhost:5555).
 
 You can change some defaults by creating a `rag-youtube.conf` file in the base folder. A good way to start is to copy `rag-youtube.sample.conf`: it contains all optios commented out with default values specified. Feel free to play with them!
 
-For the embeddings model, default is to use a [HuggingFace Sentence Transformers models](https://www.sbert.net/docs/pretrained_models.html). You can specify `ollama` to use Ollama embeddings or `openai:xxxx` to use a [OpenAI Embeddings](https://platform.openai.com/docs/guides/embeddings/what-are-embeddings). Don't forget to setup your OpenAI API key in the Configuration file for this.
+For the embeddings model, default is to use a [HuggingFace Sentence Transformers models](https://www.sbert.net/docs/pretrained_models.html). Just specify the name of the model in the configuration file (key is `model` in `Embeddings` section).
+
+You can specify `ollama` to use Ollama embeddings. This will use the embeddings of the default Ollama model (as specified in the configuration).
+
+You can also use [OpenAI Embeddings](https://platform.openai.com/docs/guides/embeddings/what-are-embeddings).  Specify `openai:xxx` where `xxx` is the model name. Don't forget to setup your OpenAI API key in the Configuration file for this.
+
+You can also use [Nomic](https://www.nomic.ai) embeddings. Specify `nomic:xxx` where `xxx` is the model name. If you do not specify a model name (`nomic:`), it defaults to [`nomic-embed-text-v1`](https://blog.nomic.ai/posts/nomic-embed-text-v1). Make sure your nomic account is setup correctly by typing `nomic login` on the command line and following the instructions. 
 
 For enumerated options, acceptables values are:
 - `llm`: `ollama`, `openai`
